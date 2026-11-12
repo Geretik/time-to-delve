@@ -1,9 +1,10 @@
 /**
- * Fills an empty database with the classes and cards from podklady/Time to Delve.xlsx
- * (converted to src/lib/db/seed-data.json). Safe to run repeatedly: existing classes
- * (matched by slug) and existing cards (same name in the same class) are skipped.
+ * Fills the database with the classes and cards from podklady/Time to Delve.xlsx
+ * (converted to src/lib/db/seed-data.json).
  *
- *   npm run db:seed
+ *   npm run db:seed              only when there are no classes yet (runs on every Vercel build,
+ *                                so cards deleted later are not brought back)
+ *   npm run db:seed -- --doplnit add whatever is missing: classes by slug, cards by name within a class
  */
 import { readFileSync } from "node:fs";
 import { and, eq } from "drizzle-orm";
@@ -21,6 +22,15 @@ async function main() {
   if (!url) throw new Error("Nastav DATABASE_URL.");
   const pool = new Pool({ connectionString: url, max: 1 });
   const db = drizzle(pool);
+  const fillMissing = process.argv.includes("--doplnit");
+  if (!fillMissing) {
+    const [any] = await db.select({ id: classes.id }).from(classes).limit(1);
+    if (any) {
+      console.log("Databáze už obsahuje data, seed přeskočen (doplnění: npm run db:seed -- --doplnit).");
+      await pool.end();
+      return;
+    }
+  }
   const seed: Seed = JSON.parse(readFileSync(new URL("../src/lib/db/seed-data.json", import.meta.url), "utf8"));
 
   const ids = new Map<string, string>();

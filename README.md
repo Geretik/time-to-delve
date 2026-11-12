@@ -20,7 +20,7 @@ npm install
 cp .env.example .env.local        # výchozí hodnoty míří na lokální Postgres z docker-compose
 docker compose up -d              # Postgres na portu 54329
 npm run db:migrate                # vytvoří tabulky
-npm run db:seed                   # nahraje classy a karty z podkladů (dá se pouštět opakovaně)
+npm run db:seed                   # nahraje classy a karty z podkladů (jen do prázdné databáze)
 npm run dev
 ```
 
@@ -40,7 +40,8 @@ Bez `RESEND_API_KEY` se e-maily (pozvánky, obnova hesla) jen vypíšou do konzo
 ## Změny databáze
 
 Schéma je v [src/lib/db/schema.ts](src/lib/db/schema.ts). Po změně spusť `npm run db:generate`, commitni
-vzniklou migraci ve složce `drizzle/`. Na Vercelu se migrace aplikují při každém buildu (`npm run vercel-build`).
+vzniklou migraci ve složce `drizzle/`. Na Vercelu se při každém buildu (`npm run vercel-build`) aplikují migrace
+a do prázdné databáze se nahrají data z podkladů. Chybějící karty z podkladů jde doplnit `npm run db:seed -- --doplnit`.
 
 ## Data z podkladů
 
