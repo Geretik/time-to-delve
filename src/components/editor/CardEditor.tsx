@@ -7,6 +7,7 @@ import { CardView, type FaceSide } from "@/components/card/CardView";
 import type { Variant } from "@/components/card/CardFaces";
 import { deleteCard, duplicateCard, saveCard } from "@/lib/actions/cards";
 import {
+  SECONDARY_KIND,
   emptyNpcData,
   emptyPlayerData,
   type ActionHalf,
@@ -38,6 +39,8 @@ type Props = {
   initial: Initial;
   classes: ClassOption[];
   meta?: { updatedAt: string; updatedBy: string | null };
+  /** Text still stored in the removed "Levý panel"; it is not rendered and the next save drops it. */
+  legacyPanel?: string;
 };
 
 type State = { kind: CardKind; name: string; classId: string | null; player: PlayerCardData; npc: NpcCardData };
@@ -68,7 +71,7 @@ function useWidth<T extends HTMLElement>() {
   return [ref, width] as const;
 }
 
-export function CardEditor({ initial, classes, meta }: Props) {
+export function CardEditor({ initial, classes, meta, legacyPanel = "" }: Props) {
   const router = useRouter();
   const [state, setState] = useState<State>(() => toState(initial));
   const [saved, setSaved] = useState(() => snapshot(toState(initial)));
@@ -446,8 +449,8 @@ export function CardEditor({ initial, classes, meta }: Props) {
                   onActivate={activate}
                 />
                 <div>
-                  <span className="label">Spodní pole</span>
-                  <div className="mb-2 inline-flex rounded-md border border-line p-0.5">
+                  <span className="label">Druhé pole</span>
+                  <div className="mb-1 inline-flex rounded-md border border-line p-0.5">
                     {(["zbytek", "vyjimka"] as const).map((k) => (
                       <button
                         key={k}
@@ -455,12 +458,17 @@ export function CardEditor({ initial, classes, meta }: Props) {
                         onClick={() => setNpc((n) => ({ ...n, secondaryKind: k }))}
                         className={`rounded px-3 py-1 text-sm font-semibold ${state.npc.secondaryKind === k ? "bg-gold text-ink" : "text-muted hover:text-bone"}`}
                       >
-                        {k === "zbytek" ? "Zbytek (2/3 základ)" : "Výjimka (pojistka)"}
+                        {SECONDARY_KIND[k].label} ({SECONDARY_KIND[k].hint})
                       </button>
                     ))}
                   </div>
+                  <p className="mb-2 text-xs text-faint">
+                    {state.npc.secondaryKind === "zbytek"
+                      ? "Vlastní spodní panel pod hlavním chováním."
+                      : "Žádný druhý panel: výjimka se vypíše pod hlavní chování do stejného panelu, oddělená linkou."}
+                  </p>
                   <KeywordTextarea
-                    label={state.npc.secondaryKind === "zbytek" ? "Zbytek" : "Výjimka"}
+                    label={SECONDARY_KIND[state.npc.secondaryKind].label}
                     value={state.npc.secondary}
                     onChange={(v) => setNpc((n) => ({ ...n, secondary: v }))}
                     onActivate={activate}
@@ -487,6 +495,13 @@ export function CardEditor({ initial, classes, meta }: Props) {
                     </button>
                   )}
                 </div>
+                {legacyPanel && (
+                  <div role="note" className="rounded-md border border-danger/50 bg-danger/10 px-3 py-2 text-sm text-danger">
+                    Pole „Levý panel“ bylo zrušeno (jeho místo zabral název predikce). Tahle karta v něm má text,
+                    který se už nevykresluje a při příštím uložení se smaže – přesuň ho jinam, pokud ho chceš zachovat:
+                    <span className="mt-1 block whitespace-pre-wrap font-semibold">{legacyPanel}</span>
+                  </div>
+                )}
                 <div>
                   <label className="label" htmlFor="back-title">Název predikce</label>
                   <input

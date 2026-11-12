@@ -2,7 +2,7 @@
 /* eslint-disable @next/next/no-img-element -- plain <img> keeps PNG export (html-to-image) simple */
 
 import { forwardRef, type CSSProperties, type ReactNode } from "react";
-import { type ActionHalf, type CardClassInfo, type NpcCardData, type PlayerCardData } from "@/lib/cards";
+import { npcGroupName, type ActionHalf, type CardClassInfo, type NpcCardData, type PlayerCardData } from "@/lib/cards";
 import { FitText } from "./FitText";
 import { KeywordIcon, RichText } from "./RichText";
 import { styles } from "./cardStyles";
@@ -189,9 +189,12 @@ export function npcFrontTemplate(data: NpcCardData): TemplateKey {
 }
 
 export function NpcFrontFace({ name, data, classInfo, showAllText = false }: NpcProps) {
-  const exception = data.secondaryKind === "vyjimka";
+  const template = npcFrontTemplate(data);
+  const exception = template === "npcFrontException";
+  const hasMain = data.main.trim() !== "";
+  const hasSecondary = data.secondary.trim() !== "";
   return (
-    <Shell template={npcFrontTemplate(data)} classInfo={classInfo} className={styles.npc}>
+    <Shell template={template} classInfo={classInfo} className={styles.npc}>
       <FitText
         className={`${styles.box} ${styles.title}`}
         style={at(80, 58, 806, 130)}
@@ -224,12 +227,8 @@ export function NpcFrontFace({ name, data, classInfo, showAllText = false }: Npc
           fitKey={`${data.main}|${data.secondary}|${showAllText}`}
         >
           <RichText text={data.main} showAllText={showAllText} />
-          {data.secondary.trim() && (
-            <>
-              <div className={styles.divider} />
-              <RichText text={data.secondary} showAllText={showAllText} />
-            </>
-          )}
+          {hasMain && hasSecondary && <div className={styles.divider} />}
+          {hasSecondary && <RichText text={data.secondary} showAllText={showAllText} />}
         </FitText>
       ) : (
         <>
@@ -255,7 +254,7 @@ export function NpcFrontFace({ name, data, classInfo, showAllText = false }: Npc
       )}
 
       <div className={styles.footer} style={{ ...at(150, 1092, 730, 1124), color: "#5d554a", fontSize: 22 }}>
-        {[classInfo?.name ?? "Obecná", data.code].filter(Boolean).join(" · ")}
+        {[npcGroupName(classInfo), data.code].filter(Boolean).join(" · ")}
       </div>
     </Shell>
   );
@@ -299,7 +298,7 @@ function BackRow({
 
 export function NpcBackFace({ data, classInfo, showAllText = false }: NpcProps) {
   const b = data.back;
-  const group = classInfo?.name ?? "";
+  const group = npcGroupName(classInfo);
   return (
     <Shell template="npcBack" classInfo={classInfo} className={styles.npc}>
       <FitText

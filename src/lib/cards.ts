@@ -104,3 +104,22 @@ export function parseNpcData(data: unknown): NpcCardData {
   const r = npcCardDataSchema.safeParse(data);
   return r.success ? r.data : emptyNpcData();
 }
+
+/**
+ * Text of the removed "Levý panel" (`back.panel`) that may still sit in stored JSON.
+ * The schema strips it, so the editor uses this to warn before a save drops it for good.
+ */
+export function legacyNpcPanel(data: unknown): string {
+  const back = (data as { back?: { panel?: unknown } } | null)?.back;
+  return typeof back?.panel === "string" ? back.panel.trim() : "";
+}
+
+export const SECONDARY_KIND: Record<NpcCardData["secondaryKind"], { label: string; hint: string }> = {
+  zbytek: { label: "Zbytek", hint: "2/3 základ" },
+  vyjimka: { label: "Výjimka", hint: "pojistka" },
+};
+
+/** Group name shown on an NPC card (front footer, back header); a card without a class is general. */
+export function npcGroupName(classInfo: CardClassInfo): string {
+  return classInfo?.name ?? "Obecná";
+}

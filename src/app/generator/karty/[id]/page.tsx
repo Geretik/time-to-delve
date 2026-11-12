@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { PageLoading } from "@/components/Loading";
 import { CardEditor } from "@/components/editor/CardEditor";
-import { parseNpcData, parsePlayerData } from "@/lib/cards";
+import { legacyNpcPanel, parseNpcData, parsePlayerData } from "@/lib/cards";
 import { getCard, listClasses } from "@/lib/data";
 
 export const metadata: Metadata = { title: "Úprava karty" };
@@ -27,6 +27,7 @@ async function EditCard({ params }: { params: PageProps<"/generator/karty/[id]">
       }}
       classes={classes.map((c) => ({ id: c.id, name: c.name, color: c.color, kind: c.kind, subgroups: c.subgroups }))}
       meta={{ updatedAt: card.updatedAt.toISOString(), updatedBy: card.updatedBy }}
+      legacyPanel={card.kind === "npc" ? legacyNpcPanel(card.data) : ""}
     />
   );
 }

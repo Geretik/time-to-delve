@@ -2,7 +2,8 @@
 
 Web hry Time to Delve: veřejná úvodní stránka a týmový generátor karet (za přihlášením).
 
-- **Karty hrdinů** (líc) a **NPC karty** (líc + rub s predikcí) se vykreslují do šablon z `podklady/TTD_karty`.
+- **Karty hrdinů** (líc) a **NPC karty** (líc + rub s predikcí) se vykreslují do šablon v `public/templates`
+  (viz [Šablony karet](#šablony-karet)).
 - **Classy a NPC skupiny** mají vlastní barvu, která tónuje rámeček karty. Karta bez classy je obecná.
 - **Ikonografie:** klíčové slovo psané VELKÝMI písmeny (`ÚTOK 3`, `DOSAH 2`, `KRVÁCENÍ`…) se vykreslí ikonou
   z `podklady/TTD_Ikony`. Mapování a pravidla jsou v [src/lib/keywords.ts](src/lib/keywords.ts).
@@ -75,6 +76,24 @@ a do prázdné databáze se nahrají data z podkladů. Chybějící karty z podk
 
 `src/lib/db/seed-data.json` je převod listů „HOTOVÉ POSTAVY“ (Barbar, Střelec, Šermíř) a „NPC 2“ (Nemrtví,
 Havěť, Střelci) z `podklady/Time to Delve.xlsx`. Rozpracované postavy a Vele-zvěř zatím převedené nejsou.
+
+## Šablony karet
+
+Podklady karet jsou v `public/templates`. Souřadnice textů v [src/components/card/CardFaces.tsx](src/components/card/CardFaces.tsx)
+jsou v pixelech šablony, takže nová verze podkladu musí mít stejný rozměr.
+
+| Soubor | Zdroj | Rozměr |
+| --- | --- | --- |
+| `player-front.jpg` | `podklady/TTD_karty/Karta Hráče Přední.jpg` (beze změny) | 864 × 1216 |
+| `npc-front.jpg` | `podklady/TTD_karty/Karta NPC Přední.jpg` (beze změny) | 880 × 1196 |
+| `npc-front-exception.jpg` | `podklady/Ornamentální kamenná karta s velkým panelem.png` (1076 × 1462), zmenšené a převedené do JPG | 880 × 1196 |
+| `npc-back.jpg` | `podklady/TTD_karty/Karta NPC Zadní.jpg` (beze změny) | 864 × 1216 |
+
+Líc NPC karty s výjimkou (`npc-front-exception.jpg`) má jeden velký panel místo dvou. Zmenšení třeba přes ImageMagick:
+
+```bash
+magick "podklady/Ornamentální kamenná karta s velkým panelem.png" -resize 880x1196! -quality 90 public/templates/npc-front-exception.jpg
+```
 
 ## Licence ikon
 
