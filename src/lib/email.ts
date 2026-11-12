@@ -5,13 +5,17 @@ type Mail = { to: string; subject: string; text: string; html: string };
 
 /**
  * Sends e-mail through Resend (https://resend.com).
- * Without RESEND_API_KEY the message is only printed to the server log,
+ * Without RESEND_API_KEY the message is only printed to the server log (outside production),
  * so local development works without an account.
  */
 export async function sendEmail(mail: Mail): Promise<{ ok: boolean; error?: string }> {
   const apiKey = process.env.RESEND_API_KEY;
   const from = process.env.EMAIL_FROM ?? "Time to Delve <onboarding@resend.dev>";
 
+  if (!apiKey && process.env.VERCEL_ENV === "production") {
+    console.error("RESEND_API_KEY není nastaven – e-mail nebyl odeslán.");
+    return { ok: false, error: "Odesílání e-mailů zatím není nastavené (chybí RESEND_API_KEY)." };
+  }
   if (!apiKey) {
     console.info(`[e-mail – RESEND_API_KEY není nastaven]\nKomu: ${mail.to}\nPředmět: ${mail.subject}\n\n${mail.text}`);
     return { ok: true };
