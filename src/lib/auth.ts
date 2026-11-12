@@ -6,7 +6,7 @@ import { redirect } from "next/navigation";
 import { cache } from "react";
 import { and, eq, gt, isNull, lte, or, sql } from "drizzle-orm";
 import { db, type Executor } from "./db";
-import { sessions, tokens, users } from "./db/schema";
+import { rateLimits, sessions, tokens, users } from "./db/schema";
 
 const scrypt = promisify(scryptCb) as (pw: string, salt: Buffer, len: number) => Promise<Buffer>;
 
@@ -28,9 +28,9 @@ const dbNow = () => sql`now()`;
 const hoursFromNow = (hours: number) => sql`now() + ${hours}::float8 * interval '1 hour'`;
 
 /**
- * Deletes expired sessions and tokens. Used invitations stay: they record who invited
+ * Deletes expired sessions, tokens and rate-limit counters. Used invitations stay: they record who invited
  * whom (created_by_id → user_id). Run daily by Vercel Cron, see app/api/cron/prune.
- * The two deletes are independent, so one failing doesn't stop the other.
+ * The deletes are independent, so one failing doesn't stop the others.
  */
 export async function pruneExpired() {
   const [deletedSessions, deletedTokens] = await Promise.all([
@@ -39,6 +39,7 @@ export async function pruneExpired() {
       .delete(tokens)
       .where(and(lte(tokens.expiresAt, dbNow()), or(isNull(tokens.usedAt), eq(tokens.kind, "reset"))))
       .returning({ id: tokens.id }),
+    db.delete(rateLimits).where(lte(rateLimits.resetAt, dbNow())),
   ]);
   return { sessions: deletedSessions.length, tokens: deletedTokens.length };
 }
@@ -57,6 +58,24 @@ export async function verifyPassword(password: string, stored: string): Promise<
   const expected = Buffer.from(hashB64, "base64");
   const actual = await scrypt(password, Buffer.from(saltB64, "base64"), expected.length);
   return timingSafeEqual(expected, actual);
+}
+
+let dummyHash: Promise<string> | undefined;
+
+/**
+ * Checks a login. For an unknown account it still hashes the password (against a throwaway
+ * hash), so the response time doesn't reveal whether the e-mail is registered.
+ */
+export async function verifyLogin(password: string, stored: string | undefined): Promise<boolean> {
+  if (stored) return verifyPassword(password, stored);
+  await verifyPassword(password, await (dummyHash ??= hashPassword(randomBytes(16).toString("hex"))));
+  return false;
+}
+
+/** Constant-time comparison of two secrets (hashed first, so the lengths don't leak either). */
+export function safeEqual(a: string, b: string): boolean {
+  const digest = (s: string) => createHash("sha256").update(s).digest();
+  return timingSafeEqual(digest(a), digest(b));
 }
 
 // --- Sessions ----------------------------------------------------------------
@@ -133,6 +152,11 @@ export async function createToken(opts: {
     expiresAt: hoursFromNow(opts.ttlHours),
   });
   return token;
+}
+
+/** Deletes every password-reset token of a user, used or not. */
+export async function deleteResetTokens(userId: string) {
+  await db.delete(tokens).where(and(eq(tokens.kind, "reset"), eq(tokens.userId, userId)));
 }
 
 /** Hash under which a token is stored (also the row id). */

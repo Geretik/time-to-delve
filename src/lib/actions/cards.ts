@@ -3,6 +3,7 @@
 import { eq } from "drizzle-orm";
 import { refresh } from "next/cache";
 import { redirect } from "next/navigation";
+import { z } from "zod";
 import { requireUser } from "@/lib/auth";
 import { cardInputSchema, type CardInput } from "@/lib/cards";
 import { db } from "@/lib/db";
@@ -35,8 +36,12 @@ export async function saveCard(input: CardInput): Promise<SaveResult> {
   return { ok: true, id: created.id };
 }
 
+/** Action arguments come straight from the client; anything but a UUID would only crash the query. */
+const isId = (id: unknown): id is string => z.uuid().safeParse(id).success;
+
 export async function duplicateCard(id: string) {
   const user = await requireUser();
+  if (!isId(id)) redirect("/generator");
   const [card] = await db.select().from(cards).where(eq(cards.id, id)).limit(1);
   if (!card) redirect("/generator");
   const [copy] = await db
@@ -55,6 +60,6 @@ export async function duplicateCard(id: string) {
 
 export async function deleteCard(id: string) {
   await requireUser();
-  await db.delete(cards).where(eq(cards.id, id));
+  if (isId(id)) await db.delete(cards).where(eq(cards.id, id));
   redirect("/generator");
 }

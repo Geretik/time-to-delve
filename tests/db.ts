@@ -6,7 +6,7 @@ import { hashPassword } from "@/lib/auth";
 export { db };
 
 export async function resetDb() {
-  await db.execute(sql`truncate users, sessions, tokens, cards, classes cascade`);
+  await db.execute(sql`truncate users, sessions, tokens, cards, classes, rate_limits cascade`);
 }
 
 export async function createUser(email: string, name = "Tester") {

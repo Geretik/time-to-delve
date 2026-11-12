@@ -46,6 +46,16 @@ export const tokens = pgTable("tokens", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+/**
+ * Fixed-window counters for rate limiting (see lib/rate-limit.ts). One row per limited
+ * thing; the key is a SHA-256, so no IP addresses or e-mails are stored here.
+ */
+export const rateLimits = pgTable("rate_limits", {
+  key: text("key").primaryKey(),
+  count: integer("count").notNull(),
+  resetAt: timestamp("reset_at", { withTimezone: true }).notNull(),
+});
+
 /** Hero class ("hero") or NPC group ("npc"). */
 export const classes = pgTable("classes", {
   id: uuid("id").primaryKey().defaultRandom(),

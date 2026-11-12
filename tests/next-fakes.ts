@@ -24,4 +24,9 @@ export const nextNavigation = {
   },
 };
 
+/** `after()` callbacks run right away; `afterAll()` waits for them. */
+const afterWork: Promise<unknown>[] = [];
+export const nextServer = { after: (fn: () => unknown) => void afterWork.push(Promise.resolve().then(fn)) };
+export const afterDone = () => Promise.all(afterWork.splice(0));
+
 export const nextCache = { refresh: () => {}, revalidatePath: () => {}, revalidateTag: () => {} };

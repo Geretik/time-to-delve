@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { InviteForm } from "@/components/auth/InviteForm";
+import { RemoveMemberButton } from "@/components/auth/RemoveMemberButton";
 import { PageLoading } from "@/components/Loading";
 import { revokeInvite } from "@/lib/actions/auth";
 import { requireUser } from "@/lib/auth";
@@ -21,13 +22,14 @@ async function Team() {
           <h2 className="mb-3 font-display text-xl font-bold">Členové ({members.length})</h2>
           <ul className="panel divide-y divide-line">
             {members.map((m) => (
-              <li key={m.id} className="flex flex-wrap items-baseline gap-x-3 px-4 py-3">
+              <li key={m.id} className="flex flex-wrap items-center gap-x-3 px-4 py-3">
                 <span className="font-semibold">{m.name}</span>
                 <span className="text-sm text-muted">{m.email}</span>
                 {m.id === me.id && <span className="text-xs text-gold">ty</span>}
                 <span className="ml-auto text-xs text-faint">
                   od {m.createdAt.toLocaleDateString("cs-CZ", { timeZone: "Europe/Prague" })}
                 </span>
+                {m.id !== me.id && <RemoveMemberButton id={m.id} name={m.name} />}
               </li>
             ))}
           </ul>

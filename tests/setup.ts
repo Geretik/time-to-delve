@@ -4,6 +4,7 @@ import { cookieJar } from "./next-fakes";
 vi.mock("server-only", () => ({}));
 vi.mock("next/headers", async () => (await import("./next-fakes")).nextHeaders);
 vi.mock("next/navigation", async () => (await import("./next-fakes")).nextNavigation);
+vi.mock("next/server", async () => (await import("./next-fakes")).nextServer);
 vi.mock("next/cache", async () => (await import("./next-fakes")).nextCache);
 
 beforeEach(() => cookieJar.clear());

@@ -1,24 +1,28 @@
 "use server";
 
-import { and, count, eq, sql } from "drizzle-orm";
+import { and, count, eq, isNull, sql } from "drizzle-orm";
 import { refresh } from "next/cache";
 import { redirect } from "next/navigation";
+import { after } from "next/server";
 import { z } from "zod";
 import {
   activeToken,
   consumeToken,
   createSession,
   createToken,
+  deleteResetTokens,
   destroyAllSessions,
   destroySession,
   findToken,
   hashPassword,
   requireUser,
-  verifyPassword,
+  safeEqual,
+  verifyLogin,
 } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { tokens, users } from "@/lib/db/schema";
 import { appUrl, linkEmail, sendEmail } from "@/lib/email";
+import { TOO_MANY, clientIp, rateLimit } from "@/lib/rate-limit";
 
 export type FormState =
   | { error?: string; message?: string; values?: Record<string, string> }
@@ -39,8 +43,15 @@ export async function login(_prev: FormState, formData: FormData): Promise<FormS
   const keep = values(formData, "email");
   if (!parsed.success) return { error: parsed.error.issues[0].message, values: keep };
 
+  // Per address against one machine guessing, per account against a spread-out attack.
+  // A locked-out owner can still get in through the password reset.
+  const allowed =
+    (await rateLimit("login-ip", await clientIp(), 30, 15)) &&
+    (await rateLimit("login-email", parsed.data.email, 10, 15));
+  if (!allowed) return { error: TOO_MANY, values: keep };
+
   const [user] = await db.select().from(users).where(eq(users.email, parsed.data.email)).limit(1);
-  if (!user || !(await verifyPassword(parsed.data.password, user.passwordHash))) {
+  if (!(await verifyLogin(parsed.data.password, user?.passwordHash)) || !user) {
     return { error: "Nesprávný e-mail nebo heslo.", values: keep };
   }
   await createSession(user.id);
@@ -76,6 +87,7 @@ export async function register(_prev: FormState, formData: FormData): Promise<Fo
     .safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { error: parsed.error.issues[0].message, values: keep };
   const data = parsed.data;
+  if (!(await rateLimit("register-ip", await clientIp(), 10, 60))) return { error: TOO_MANY, values: keep };
 
   // Quick checks without a transaction. The invitation is only looked up here (for its
   // e-mail); it's used up below, together with creating the account.
@@ -85,7 +97,7 @@ export async function register(_prev: FormState, formData: FormData): Promise<Fo
     if (!invite) return { error: "Pozvánka je neplatná nebo vypršela.", values: keep };
     userEmail = invite.email ?? data.email;
   } else if (process.env.INVITE_CODE) {
-    if (data.invite !== process.env.INVITE_CODE) return { error: "Neplatný zvací kód.", values: keep };
+    if (!safeEqual(data.invite ?? "", process.env.INVITE_CODE)) return { error: "Neplatný zvací kód.", values: keep };
   }
 
   let userId: string;
@@ -182,7 +194,24 @@ export async function createInvite(_prev: InviteState, formData: FormData): Prom
 
 export async function revokeInvite(id: string) {
   await requireUser();
+  if (typeof id !== "string" || !/^[0-9a-f]{64}$/.test(id)) return;
   await db.delete(tokens).where(and(eq(tokens.id, id), activeToken("invite")));
+  refresh();
+}
+
+/**
+ * Removes a team member: the account, its sessions (cascade) and the invitations it created
+ * that nobody has used yet – otherwise it could let itself back in. Cards stay.
+ * You can't remove yourself, so there is always at least one account left (an empty
+ * database would open the registration to anyone).
+ */
+export async function removeMember(id: string) {
+  const me = await requireUser();
+  if (!z.uuid().safeParse(id).success || id === me.id) return;
+  await db.transaction(async (tx) => {
+    await tx.delete(tokens).where(and(eq(tokens.createdById, id), eq(tokens.kind, "invite"), isNull(tokens.usedAt)));
+    await tx.delete(users).where(eq(users.id, id));
+  });
   refresh();
 }
 
@@ -191,31 +220,46 @@ export async function revokeInvite(id: string) {
 export async function requestPasswordReset(_prev: FormState, formData: FormData): Promise<FormState> {
   const parsed = email.safeParse(formData.get("email"));
   if (!parsed.success) return { error: parsed.error.issues[0].message, values: values(formData, "email") };
+  const address = parsed.data;
 
-  const [user] = await db.select().from(users).where(eq(users.email, parsed.data)).limit(1);
-  if (user) {
-    const token = await createToken({ kind: "reset", email: user.email, userId: user.id, ttlHours: 1 });
-    const url = `${await appUrl()}/obnova-hesla?token=${token}`;
-    const sent = await sendEmail({
-      to: user.email,
-      subject: "Obnova hesla – Time to Delve",
-      ...linkEmail({
-        heading: "Obnova hesla",
-        intro: `Ahoj ${user.name}, někdo (snad ty) požádal o nové heslo do generátoru karet.`,
-        cta: "Nastavit nové heslo",
-        url,
-        outro: "Odkaz platí 1 hodinu. Pokud jsi o změnu nežádal(a), e-mail ignoruj – heslo zůstane stejné.",
-      }),
-    });
-    if (!sent.ok) return { error: sent.error, values: values(formData, "email") };
+  if (!(await rateLimit("reset-ip", await clientIp(), 5, 60))) {
+    return { error: TOO_MANY, values: values(formData, "email") };
   }
-  // Same answer whether or not the account exists, so the form can't be used to probe e-mails.
+  // At most 3 e-mails an hour to one address, whoever asks. Over the limit we stay silent,
+  // so the answer below doesn't change.
+  if (await rateLimit("reset-email", address, 3, 60)) {
+    // Looking the account up and sending happen after the response: neither the answer nor
+    // how long it takes says whether the account exists. A failed send is only logged.
+    after(async () => {
+      try {
+        const [user] = await db.select().from(users).where(eq(users.email, address)).limit(1);
+        if (!user) return;
+        const token = await createToken({ kind: "reset", email: user.email, userId: user.id, ttlHours: 1 });
+        const url = `${await appUrl()}/obnova-hesla?token=${token}`;
+        const sent = await sendEmail({
+          to: user.email,
+          subject: "Obnova hesla – Time to Delve",
+          ...linkEmail({
+            heading: "Obnova hesla",
+            intro: `Ahoj ${user.name}, někdo (snad ty) požádal o nové heslo do generátoru karet.`,
+            cta: "Nastavit nové heslo",
+            url,
+            outro: "Odkaz platí 1 hodinu. Pokud jsi o změnu nežádal(a), e-mail ignoruj – heslo zůstane stejné.",
+          }),
+        });
+        if (!sent.ok) console.error(`Obnova hesla: e-mail se nepodařilo odeslat (${sent.error}).`);
+      } catch (e) {
+        console.error("Obnova hesla selhala:", e);
+      }
+    });
+  }
   return { message: "Pokud účet s tímto e-mailem existuje, poslali jsme na něj odkaz pro obnovu hesla." };
 }
 
 export async function resetPassword(_prev: FormState, formData: FormData): Promise<FormState> {
   const parsed = z.object({ token: z.string().min(1), password }).safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { error: parsed.error.issues[0].message };
+  if (!(await rateLimit("reset-use-ip", await clientIp(), 10, 60))) return { error: TOO_MANY };
 
   const used = await consumeToken("reset", parsed.data.token);
   if (!used?.userId) return { error: "Odkaz je neplatný nebo vypršel. Požádej o nový." };
@@ -223,6 +267,8 @@ export async function resetPassword(_prev: FormState, formData: FormData): Promi
     .update(users)
     .set({ passwordHash: await hashPassword(parsed.data.password) })
     .where(eq(users.id, used.userId));
+  // Other reset links still in the mailbox must not outlive the change.
+  await deleteResetTokens(used.userId);
   await destroyAllSessions(used.userId);
   await createSession(used.userId);
   redirect("/generator");
