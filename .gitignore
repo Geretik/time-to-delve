@@ -1,0 +1,16 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Závislosti a buildy
+node_modules/
+vendor/
+dist/
+build/
+
+# Prostředí
+.env
+.env.*
+!.env.example
