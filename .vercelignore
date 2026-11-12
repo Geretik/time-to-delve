@@ -1,0 +1,5 @@
+# Not needed for the build; keeps local secrets and source materials out of CLI deploys.
+.env*
+!.env.example
+podklady
+docker-compose.yml
