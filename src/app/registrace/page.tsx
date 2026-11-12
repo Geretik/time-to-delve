@@ -24,7 +24,7 @@ async function RegisterContent({ searchParams }: { searchParams: PageProps<"/reg
         </p>
       );
     }
-    return <RegisterForm token={token} invitedEmail={invite.email} needsCode={false} />;
+    return <RegisterForm token={token} invitedEmail={invite.email ?? undefined} needsCode={false} />;
   }
 
   // Same order as the register action: a shared code (if configured) beats the first-account bootstrap.

@@ -34,7 +34,10 @@ export const tokens = pgTable("tokens", {
   // SHA-256 of the token sent by e-mail
   id: text("id").primaryKey(),
   kind: text("kind", { enum: ["reset", "invite"] }).notNull(),
-  email: text("email").notNull(),
+  /** Required for password reset; optional for invitations shared as a link. */
+  email: text("email"),
+  /** Who the invitation is for (free text, shown in the team page). */
+  note: text("note").notNull().default(""),
   userId: uuid("user_id").references(() => users.id, { onDelete: "cascade" }),
   createdById: uuid("created_by_id").references(() => users.id, { onDelete: "set null" }),
   expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),

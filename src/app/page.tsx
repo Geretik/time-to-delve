@@ -1,6 +1,8 @@
 /* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
+import { Suspense } from "react";
 import { CardView } from "@/components/card/CardView";
+import { getCurrentUser } from "@/lib/auth";
 import { KEYWORDS, iconSrc } from "@/lib/keywords";
 import seed from "@/lib/db/seed-data.json";
 
@@ -46,6 +48,20 @@ const FEATURES = [
   },
 ];
 
+/** "Generátor" for signed-in team members, "Přihlásit" for everyone else. */
+async function AccountLink() {
+  const user = await getCurrentUser();
+  return user ? (
+    <Link href="/generator" className="btn ml-2 px-3 py-1.5" title={`Přihlášen: ${user.name}`}>
+      Generátor
+    </Link>
+  ) : (
+    <Link href="/prihlaseni" className="btn ml-2 px-3 py-1.5">
+      Přihlásit
+    </Link>
+  );
+}
+
 export default function Home() {
   const statuses = KEYWORDS.filter((k) => k.category === "status");
   return (
@@ -55,7 +71,9 @@ export default function Home() {
         <nav className="ml-auto flex items-center gap-1 text-sm">
           <a href="#o-hre" className="hidden rounded-md px-3 py-1.5 text-muted hover:text-bone sm:inline">O hře</a>
           <a href="#hrdinove" className="hidden rounded-md px-3 py-1.5 text-muted hover:text-bone sm:inline">Hrdinové</a>
-          <Link href="/prihlaseni" className="btn ml-2 px-3 py-1.5">Přihlásit</Link>
+          <Suspense fallback={<span className="btn invisible ml-2 px-3 py-1.5" aria-hidden>Přihlásit</span>}>
+            <AccountLink />
+          </Suspense>
         </nav>
       </header>
 
@@ -72,7 +90,7 @@ export default function Home() {
                 stojí – a nepřátelé nečekají.
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
-                <Link href="/prihlaseni" className="btn btn-primary px-5 py-2.5 text-base">Do generátoru karet</Link>
+                <Link href="/generator" className="btn btn-primary px-5 py-2.5 text-base">Do generátoru karet</Link>
                 <a href="#o-hre" className="btn px-5 py-2.5 text-base">Jak hra funguje</a>
               </div>
             </div>

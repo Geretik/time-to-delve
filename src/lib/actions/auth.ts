@@ -1,6 +1,7 @@
 "use server";
 
-import { count, eq } from "drizzle-orm";
+import { and, count, eq, isNull } from "drizzle-orm";
+import { refresh } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import {
@@ -15,7 +16,7 @@ import {
   verifyPassword,
 } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { users } from "@/lib/db/schema";
+import { tokens, users } from "@/lib/db/schema";
 import { appUrl, linkEmail, sendEmail } from "@/lib/email";
 
 export type FormState =
@@ -101,29 +102,68 @@ export async function register(_prev: FormState, formData: FormData): Promise<Fo
 
 // --- Team invitations ---------------------------------------------------------
 
-export async function inviteUser(_prev: FormState, formData: FormData): Promise<FormState> {
+export type InviteState = (NonNullable<FormState> & { link?: string }) | undefined;
+
+const INVITE_DAYS = 7;
+
+/**
+ * Creates an invitation. The submit button decides how it's delivered:
+ *  - mode=link  → returns the registration link to copy and share anywhere,
+ *  - mode=email → sends the link by e-mail (and still returns it if sending fails).
+ * The note says who the invitation is for; the raw link is shown only once.
+ */
+export async function createInvite(_prev: InviteState, formData: FormData): Promise<InviteState> {
   const me = await requireUser();
-  const parsed = email.safeParse(formData.get("email"));
-  if (!parsed.success) return { error: parsed.error.issues[0].message };
+  const mode = formData.get("mode") === "email" ? "email" : "link";
+  const note = String(formData.get("note") ?? "").trim().slice(0, 200);
+  const rawEmail = String(formData.get("email") ?? "").trim();
+  const values = { note, email: rawEmail };
 
-  const [existing] = await db.select({ id: users.id }).from(users).where(eq(users.email, parsed.data)).limit(1);
-  if (existing) return { error: "Tento člověk už účet má." };
+  let address: string | undefined;
+  if (rawEmail || mode === "email") {
+    const parsed = email.safeParse(rawEmail);
+    if (!parsed.success) return { error: parsed.error.issues[0].message, values };
+    address = parsed.data;
+    const [existing] = await db.select({ id: users.id }).from(users).where(eq(users.email, address)).limit(1);
+    if (existing) return { error: "Tento člověk už účet má.", values };
+  }
+  if (!note && !address) return { error: "Napiš poznámku, pro koho pozvánka je.", values };
 
-  const token = await createToken({ kind: "invite", email: parsed.data, createdById: me.id, ttlHours: 24 * 7 });
-  const url = `${await appUrl()}/registrace?pozvanka=${token}`;
+  const token = await createToken({
+    kind: "invite",
+    email: address,
+    note,
+    createdById: me.id,
+    ttlHours: 24 * INVITE_DAYS,
+  });
+  const link = `${await appUrl()}/registrace?pozvanka=${token}`;
+  refresh();
+
+  if (mode === "link") {
+    return { message: "Odkaz je připravený. Zkopíruj si ho – znovu už ho nezobrazíme.", link };
+  }
+
   const sent = await sendEmail({
-    to: parsed.data,
+    to: address!,
     subject: `${me.name} tě zve do generátoru karet Time to Delve`,
     ...linkEmail({
       heading: "Pozvánka do generátoru karet",
       intro: `${me.name} tě zve do týmového generátoru karet hry Time to Delve.`,
       cta: "Vytvořit účet",
-      url,
-      outro: "Pozvánka platí 7 dní. Pokud ji nečekáš, e-mail klidně ignoruj.",
+      url: link,
+      outro: `Pozvánka platí ${INVITE_DAYS} dní. Pokud ji nečekáš, e-mail klidně ignoruj.`,
     }),
   });
-  if (!sent.ok) return { error: sent.error };
-  return { message: `Pozvánka odeslána na ${parsed.data}.` };
+  if (!sent.ok) {
+    return { error: `${sent.error} Pozvánka ale vznikla – pošli odkaz ručně:`, link };
+  }
+  return { message: `Pozvánka odeslána na ${address}.` };
+}
+
+export async function revokeInvite(id: string) {
+  await requireUser();
+  await db.delete(tokens).where(and(eq(tokens.id, id), eq(tokens.kind, "invite"), isNull(tokens.usedAt)));
+  refresh();
 }
 
 // --- Password reset -----------------------------------------------------------

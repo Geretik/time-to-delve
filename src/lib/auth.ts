@@ -77,7 +77,8 @@ type TokenKind = "reset" | "invite";
 
 export async function createToken(opts: {
   kind: TokenKind;
-  email: string;
+  email?: string;
+  note?: string;
   userId?: string;
   createdById?: string;
   ttlHours: number;
@@ -87,11 +88,17 @@ export async function createToken(opts: {
     id: hashToken(token),
     kind: opts.kind,
     email: opts.email,
+    note: opts.note ?? "",
     userId: opts.userId,
     createdById: opts.createdById,
     expiresAt: new Date(Date.now() + opts.ttlHours * 60 * 60 * 1000),
   });
   return token;
+}
+
+/** Hash under which a token is stored (also the row id). */
+export function tokenId(token: string) {
+  return hashToken(token);
 }
 
 /** Valid (unused, unexpired) token row, without consuming it. */
