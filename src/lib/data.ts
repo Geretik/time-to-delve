@@ -1,8 +1,8 @@
 import "server-only";
 import { asc, desc, eq } from "drizzle-orm";
-import { requireUser } from "./auth";
+import { activeToken, requireUser } from "./auth";
 import { db } from "./db";
-import { cards, classes, users } from "./db/schema";
+import { cards, classes, tokens, users } from "./db/schema";
 
 // Every getter re-checks the session, so a page can't leak data by forgetting to.
 
@@ -58,4 +58,32 @@ export async function recentCards(limit = 6) {
     .from(cards)
     .orderBy(desc(cards.updatedAt))
     .limit(limit);
+}
+
+// --- Team ---------------------------------------------------------------------
+
+export async function listMembers() {
+  await requireUser();
+  return db
+    .select({ id: users.id, name: users.name, email: users.email, createdAt: users.createdAt })
+    .from(users)
+    .orderBy(asc(users.createdAt));
+}
+
+/** Invitations that can still be used, newest first. */
+export async function listActiveInvites() {
+  await requireUser();
+  return db
+    .select({
+      id: tokens.id,
+      note: tokens.note,
+      email: tokens.email,
+      expiresAt: tokens.expiresAt,
+      createdAt: tokens.createdAt,
+      createdBy: users.name,
+    })
+    .from(tokens)
+    .leftJoin(users, eq(users.id, tokens.createdById))
+    .where(activeToken("invite"))
+    .orderBy(desc(tokens.createdAt));
 }

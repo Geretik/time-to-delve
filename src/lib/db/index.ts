@@ -23,3 +23,6 @@ globalForDb.__ttdPool = pool;
 
 export const db = drizzle(pool, { schema });
 export { schema };
+
+/** The database or an open transaction (`db.transaction(async (tx) => …)`). */
+export type Executor = typeof db | Parameters<Parameters<typeof db.transaction>[0]>[0];

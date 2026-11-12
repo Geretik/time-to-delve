@@ -38,6 +38,7 @@ export const tokens = pgTable("tokens", {
   email: text("email"),
   /** Who the invitation is for (free text, shown in the team page). */
   note: text("note").notNull().default(""),
+  /** Reset: whose password. Invitation: the account created with it (set when used). */
   userId: uuid("user_id").references(() => users.id, { onDelete: "cascade" }),
   createdById: uuid("created_by_id").references(() => users.id, { onDelete: "set null" }),
   expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),

@@ -1,10 +1,11 @@
 "use server";
 
-import { and, count, eq, isNull } from "drizzle-orm";
+import { and, count, eq, sql } from "drizzle-orm";
 import { refresh } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import {
+  activeToken,
   consumeToken,
   createSession,
   createToken,
@@ -53,6 +54,9 @@ export async function logout() {
 
 // --- Registration ----------------------------------------------------------------
 
+/** A reason to turn the registration down; thrown inside the transaction so it rolls back. */
+class RegisterError extends Error {}
+
 /**
  * Registration is invite-only. One of these must hold:
  *  - the e-mail invitation token is valid (the e-mail address is taken from it),
@@ -73,30 +77,46 @@ export async function register(_prev: FormState, formData: FormData): Promise<Fo
   if (!parsed.success) return { error: parsed.error.issues[0].message, values: keep };
   const data = parsed.data;
 
-  let inviteToken: Awaited<ReturnType<typeof findToken>> = null;
+  // Quick checks without a transaction. The invitation is only looked up here (for its
+  // e-mail); it's used up below, together with creating the account.
+  let userEmail = data.email;
   if (data.token) {
-    inviteToken = await findToken("invite", data.token);
-    if (!inviteToken) return { error: "Pozvánka je neplatná nebo vypršela.", values: keep };
+    const invite = await findToken("invite", data.token);
+    if (!invite) return { error: "Pozvánka je neplatná nebo vypršela.", values: keep };
+    userEmail = invite.email ?? data.email;
   } else if (process.env.INVITE_CODE) {
     if (data.invite !== process.env.INVITE_CODE) return { error: "Neplatný zvací kód.", values: keep };
-  } else {
-    const [{ n }] = await db.select({ n: count() }).from(users);
-    if (n > 0) return { error: "Registrace je jen na pozvánku. Požádej někoho z týmu.", values: keep };
   }
 
-  const userEmail = inviteToken?.email ?? data.email;
-  const [existing] = await db.select({ id: users.id }).from(users).where(eq(users.email, userEmail)).limit(1);
-  if (existing) return { error: "Účet s tímto e-mailem už existuje. Přihlas se.", values: keep };
+  let userId: string;
+  try {
+    userId = await db.transaction(async (tx) => {
+      // Registrations are rare, so they run one at a time: the checks below can't race
+      // (two "first" accounts on an empty database, two sign-ups with the same e-mail).
+      await tx.execute(sql`select pg_advisory_xact_lock(hashtext('ttd:register'))`);
 
-  if (inviteToken && !(await consumeToken(inviteToken.id))) {
-    return { error: "Pozvánka už byla použita.", values: keep };
+      if (!data.token && !process.env.INVITE_CODE) {
+        const [{ n }] = await tx.select({ n: count() }).from(users);
+        if (n > 0) throw new RegisterError("Registrace je jen na pozvánku. Požádej někoho z týmu.");
+      }
+      const [existing] = await tx.select({ id: users.id }).from(users).where(eq(users.email, userEmail)).limit(1);
+      if (existing) throw new RegisterError("Účet s tímto e-mailem už existuje. Přihlas se.");
+
+      const [user] = await tx
+        .insert(users)
+        .values({ name: data.name, email: userEmail, passwordHash: await hashPassword(data.password) })
+        .returning({ id: users.id });
+      // If the invitation can't be used any more, the throw rolls the new account back too.
+      if (data.token && !(await consumeToken("invite", data.token, { tx, userId: user.id }))) {
+        throw new RegisterError("Pozvánka už neplatí – mezitím ji někdo použil nebo zrušil, nebo vypršela.");
+      }
+      return user.id;
+    });
+  } catch (e) {
+    if (e instanceof RegisterError) return { error: e.message, values: keep };
+    throw e;
   }
-
-  const [user] = await db
-    .insert(users)
-    .values({ name: data.name, email: userEmail, passwordHash: await hashPassword(data.password) })
-    .returning({ id: users.id });
-  await createSession(user.id);
+  await createSession(userId);
   redirect("/generator");
 }
 
@@ -162,7 +182,7 @@ export async function createInvite(_prev: InviteState, formData: FormData): Prom
 
 export async function revokeInvite(id: string) {
   await requireUser();
-  await db.delete(tokens).where(and(eq(tokens.id, id), eq(tokens.kind, "invite"), isNull(tokens.usedAt)));
+  await db.delete(tokens).where(and(eq(tokens.id, id), activeToken("invite")));
   refresh();
 }
 
@@ -197,15 +217,13 @@ export async function resetPassword(_prev: FormState, formData: FormData): Promi
   const parsed = z.object({ token: z.string().min(1), password }).safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { error: parsed.error.issues[0].message };
 
-  const row = await findToken("reset", parsed.data.token);
-  if (!row?.userId || !(await consumeToken(row.id))) {
-    return { error: "Odkaz je neplatný nebo vypršel. Požádej o nový." };
-  }
+  const used = await consumeToken("reset", parsed.data.token);
+  if (!used?.userId) return { error: "Odkaz je neplatný nebo vypršel. Požádej o nový." };
   await db
     .update(users)
     .set({ passwordHash: await hashPassword(parsed.data.password) })
-    .where(eq(users.id, row.userId));
-  await destroyAllSessions(row.userId);
-  await createSession(row.userId);
+    .where(eq(users.id, used.userId));
+  await destroyAllSessions(used.userId);
+  await createSession(used.userId);
   redirect("/generator");
 }

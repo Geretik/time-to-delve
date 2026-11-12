@@ -1,12 +1,10 @@
 import type { Metadata } from "next";
-import { and, asc, desc, eq, gt, isNull, sql } from "drizzle-orm";
 import { Suspense } from "react";
 import { InviteForm } from "@/components/auth/InviteForm";
 import { PageLoading } from "@/components/Loading";
 import { revokeInvite } from "@/lib/actions/auth";
 import { requireUser } from "@/lib/auth";
-import { db } from "@/lib/db";
-import { tokens, users } from "@/lib/db/schema";
+import { listActiveInvites, listMembers } from "@/lib/data";
 
 export const metadata: Metadata = { title: "Tým" };
 
@@ -14,26 +12,7 @@ const when = (d: Date) =>
   d.toLocaleString("cs-CZ", { timeZone: "Europe/Prague", day: "numeric", month: "numeric", hour: "2-digit", minute: "2-digit" });
 
 async function Team() {
-  const me = await requireUser();
-  const [members, invites] = await Promise.all([
-    db
-      .select({ id: users.id, name: users.name, email: users.email, createdAt: users.createdAt })
-      .from(users)
-      .orderBy(asc(users.createdAt)),
-    db
-      .select({
-        id: tokens.id,
-        note: tokens.note,
-        email: tokens.email,
-        expiresAt: tokens.expiresAt,
-        createdAt: tokens.createdAt,
-        createdBy: users.name,
-      })
-      .from(tokens)
-      .leftJoin(users, eq(users.id, tokens.createdById))
-      .where(and(eq(tokens.kind, "invite"), isNull(tokens.usedAt), gt(tokens.expiresAt, sql`now()`)))
-      .orderBy(desc(tokens.createdAt)),
-  ]);
+  const [me, members, invites] = await Promise.all([requireUser(), listMembers(), listActiveInvites()]);
 
   return (
     <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_400px]">
