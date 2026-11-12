@@ -2,7 +2,7 @@
 /* eslint-disable @next/next/no-img-element -- plain <img> keeps PNG export (html-to-image) simple */
 
 import { forwardRef, type CSSProperties, type ReactNode } from "react";
-import { SECONDARY_LABEL, type ActionHalf, type CardClassInfo, type NpcCardData, type PlayerCardData } from "@/lib/cards";
+import { type ActionHalf, type CardClassInfo, type NpcCardData, type PlayerCardData } from "@/lib/cards";
 import { FitText } from "./FitText";
 import { KeywordIcon, RichText } from "./RichText";
 import { styles } from "./cardStyles";
@@ -10,6 +10,8 @@ import { styles } from "./cardStyles";
 export const TEMPLATES = {
   player: { src: "/templates/player-front.jpg", width: 864, height: 1216, tint: 0.5 },
   npcFront: { src: "/templates/npc-front.jpg", width: 880, height: 1196, tint: 0.32 },
+  /** Front of a card whose second field is an exception: one big panel instead of two. */
+  npcFrontException: { src: "/templates/npc-front-exception.jpg", width: 880, height: 1196, tint: 0.32 },
   npcBack: { src: "/templates/npc-back.jpg", width: 864, height: 1216, tint: 0.32 },
 } as const;
 
@@ -23,6 +25,13 @@ const at = (x1: number, y1: number, x2: number, y2: number): CSSProperties => ({
   width: x2 - x1,
   height: y2 - y1,
 });
+
+/** Same rectangle, but the content is laid out along its height and reads bottom to top. */
+const atSideways = (x1: number, y1: number, x2: number, y2: number): CSSProperties => {
+  const w = x2 - x1;
+  const h = y2 - y1;
+  return { left: x1 + (w - h) / 2, top: y1 + (h - w) / 2, width: h, height: w, transform: "rotate(-90deg)" };
+};
 
 function Shell({
   template,
@@ -175,9 +184,14 @@ type NpcProps = {
   showAllText?: boolean;
 };
 
+export function npcFrontTemplate(data: NpcCardData): TemplateKey {
+  return data.secondaryKind === "vyjimka" ? "npcFrontException" : "npcFront";
+}
+
 export function NpcFrontFace({ name, data, classInfo, showAllText = false }: NpcProps) {
+  const exception = data.secondaryKind === "vyjimka";
   return (
-    <Shell template="npcFront" classInfo={classInfo} className={styles.npc}>
+    <Shell template={npcFrontTemplate(data)} classInfo={classInfo} className={styles.npc}>
       <FitText
         className={`${styles.box} ${styles.title}`}
         style={at(80, 58, 806, 130)}
@@ -200,31 +214,45 @@ export function NpcFrontFace({ name, data, classInfo, showAllText = false }: Npc
         {data.time ?? ""}
       </div>
 
-      <div className={styles.label} style={{ position: "absolute", ...at(92, 284, 600, 312), textAlign: "left" }}>
-        Hlavní chování
-      </div>
-      <FitText
-        className={styles.box}
-        style={at(92, 314, 790, 528)}
-        max={48}
-        min={16}
-        fitKey={`${data.main}|${showAllText}`}
-      >
-        <RichText text={data.main} showAllText={showAllText} />
-      </FitText>
-
-      <div className={styles.label} style={{ position: "absolute", ...at(92, 600, 600, 628), textAlign: "left" }}>
-        {SECONDARY_LABEL[data.secondaryKind]}
-      </div>
-      <FitText
-        className={styles.box}
-        style={at(92, 632, 790, 1080)}
-        max={48}
-        min={16}
-        fitKey={`${data.secondary}|${showAllText}`}
-      >
-        <RichText text={data.secondary} showAllText={showAllText} />
-      </FitText>
+      {exception ? (
+        // One panel: the main behaviour, then the exception that modifies it.
+        <FitText
+          className={styles.box}
+          style={at(92, 300, 790, 1080)}
+          max={48}
+          min={16}
+          fitKey={`${data.main}|${data.secondary}|${showAllText}`}
+        >
+          <RichText text={data.main} showAllText={showAllText} />
+          {data.secondary.trim() && (
+            <>
+              <div className={styles.divider} />
+              <RichText text={data.secondary} showAllText={showAllText} />
+            </>
+          )}
+        </FitText>
+      ) : (
+        <>
+          <FitText
+            className={styles.box}
+            style={at(92, 290, 790, 530)}
+            max={48}
+            min={16}
+            fitKey={`${data.main}|${showAllText}`}
+          >
+            <RichText text={data.main} showAllText={showAllText} />
+          </FitText>
+          <FitText
+            className={styles.box}
+            style={at(92, 605, 790, 1080)}
+            max={48}
+            min={16}
+            fitKey={`${data.secondary}|${showAllText}`}
+          >
+            <RichText text={data.secondary} showAllText={showAllText} />
+          </FitText>
+        </>
+      )}
 
       <div className={styles.footer} style={{ ...at(150, 1092, 730, 1124), color: "#5d554a", fontSize: 22 }}>
         {[classInfo?.name ?? "Obecná", data.code].filter(Boolean).join(" · ")}
@@ -271,6 +299,7 @@ function BackRow({
 
 export function NpcBackFace({ data, classInfo, showAllText = false }: NpcProps) {
   const b = data.back;
+  const group = classInfo?.name ?? "";
   return (
     <Shell template="npcBack" classInfo={classInfo} className={styles.npc}>
       <FitText
@@ -278,19 +307,19 @@ export function NpcBackFace({ data, classInfo, showAllText = false }: NpcProps) 
         style={at(84, 66, 790, 226)}
         max={64}
         min={24}
-        fitKey={b.title}
+        fitKey={group}
       >
-        {b.title}
+        {group}
       </FitText>
 
       <FitText
-        className={styles.box}
-        style={at(86, 292, 446, 1130)}
-        max={34}
-        min={14}
-        fitKey={`${b.panel}|${showAllText}`}
+        className={`${styles.box} ${styles.title}`}
+        style={atSideways(86, 292, 446, 1130)}
+        max={110}
+        min={28}
+        fitKey={b.title}
       >
-        <RichText text={b.panel} showAllText={showAllText} />
+        {b.title}
       </FitText>
 
       <BackRow

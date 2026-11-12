@@ -28,7 +28,6 @@ export const npcCardDataSchema = z.object({
   secondary: text,
   back: z.object({
     title: z.string().max(200).default(""),
-    panel: text,
     bonusGroup: z.string().max(100).default(""),
     bonusEffect: z.string().max(500).default(""),
     neutralGroup: z.string().max(100).default(""),
@@ -86,7 +85,6 @@ export function emptyNpcData(): NpcCardData {
     secondary: "",
     back: {
       title: "",
-      panel: "",
       bonusGroup: "",
       bonusEffect: "",
       neutralGroup: "",
@@ -106,8 +104,3 @@ export function parseNpcData(data: unknown): NpcCardData {
   const r = npcCardDataSchema.safeParse(data);
   return r.success ? r.data : emptyNpcData();
 }
-
-export const SECONDARY_LABEL: Record<NpcCardData["secondaryKind"], string> = {
-  zbytek: "Zbytek",
-  vyjimka: "Výjimka",
-};

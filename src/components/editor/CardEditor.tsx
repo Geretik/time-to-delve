@@ -515,13 +515,6 @@ export function CardEditor({ initial, classes, meta }: Props) {
                   </div>
                   <KeywordTextarea label="Postih – chování" rows={1} value={state.npc.back.penaltyEffect} onChange={(v) => setBack({ penaltyEffect: v })} onActivate={activate} />
                 </div>
-                <KeywordTextarea
-                  label="Levý panel (nepovinné)"
-                  value={state.npc.back.panel}
-                  onChange={(v) => setBack({ panel: v })}
-                  onActivate={activate}
-                  rows={2}
-                />
               </section>
             </>
           )}

@@ -3,7 +3,16 @@
 import { forwardRef, type ReactNode } from "react";
 import type { CardClassInfo, CardKind, NpcCardData, PlayerCardData } from "@/lib/cards";
 import { parseNpcData, parsePlayerData } from "@/lib/cards";
-import { FaceRoot, NpcBackFace, NpcFrontFace, PlayerFace, TEMPLATES, type TemplateKey, type Variant } from "./CardFaces";
+import {
+  FaceRoot,
+  NpcBackFace,
+  NpcFrontFace,
+  PlayerFace,
+  TEMPLATES,
+  npcFrontTemplate,
+  type TemplateKey,
+  type Variant,
+} from "./CardFaces";
 
 type ScaledProps = { template: TemplateKey; width: number; children: ReactNode; className?: string };
 
@@ -63,7 +72,7 @@ export const CardView = forwardRef<HTMLDivElement, CardViewProps>(function CardV
       <NpcBackFace name={name} data={npc} classInfo={classInfo} showAllText={showAllText} />
     </ScaledFace>
   ) : (
-    <ScaledFace ref={ref} template="npcFront" width={width} className={className}>
+    <ScaledFace ref={ref} template={npcFrontTemplate(npc)} width={width} className={className}>
       <NpcFrontFace name={name} data={npc} classInfo={classInfo} showAllText={showAllText} />
     </ScaledFace>
   );

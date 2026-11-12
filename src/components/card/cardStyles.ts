@@ -7,6 +7,7 @@ export const styles = {
   caps: "ttd-caps",
   card: "ttd-card",
   code: "ttd-code",
+  divider: "ttd-divider",
   footer: "ttd-footer",
   gem: "ttd-gem",
   icon: "ttd-icon",

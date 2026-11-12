@@ -783,7 +783,6 @@
     "secondary": "KROK 2; VEDLE: ÚTOK 2",
     "back": {
      "title": "HNIJÍCÍ TICHO",
-     "panel": "",
      "bonusGroup": "Kostlivci",
      "bonusEffect": "KRVÁCENÍ",
      "neutralGroup": "Zombie",
@@ -805,7 +804,6 @@
     "secondary": "KROK 4; VEDLE: ÚTOK 2",
     "back": {
      "title": "HNIJÍCÍ TICHO",
-     "panel": "",
      "bonusGroup": "Kostlivci",
      "bonusEffect": "+1 ÚTOK",
      "neutralGroup": "Ghulové",
@@ -827,7 +825,6 @@
     "secondary": "plné životy: ÚTOK 3",
     "back": {
      "title": "HNIJÍCÍ TICHO",
-     "panel": "",
      "bonusGroup": "Kostlivci",
      "bonusEffect": "SEBE: BONUS",
      "neutralGroup": "Ghulové",
@@ -849,7 +846,6 @@
     "secondary": "KROK 3; VEDLE: ÚTOK 1, TLAK",
     "back": {
      "title": "HLADOVÝ VÝPAD",
-     "panel": "",
      "bonusGroup": "Zombie",
      "bonusEffect": "SEBE: HOJENÍ",
      "neutralGroup": "Ghulové",
@@ -871,7 +867,6 @@
     "secondary": "bez útoku: +2 KROK",
     "back": {
      "title": "HLADOVÝ VÝPAD",
-     "panel": "",
      "bonusGroup": "Zombie",
      "bonusEffect": "+2 ÚTOK",
      "neutralGroup": "Kostlivci",
@@ -893,7 +888,6 @@
     "secondary": "bez útoku: SKOK +2; VEDLE: ÚTOK 2.",
     "back": {
      "title": "HLADOVÝ VÝPAD",
-     "panel": "",
      "bonusGroup": "Zombie",
      "bonusEffect": "POSTIH (hráč)",
      "neutralGroup": "Kostlivci",
@@ -915,7 +909,6 @@
     "secondary": "KROK 2; VEDLE: ÚTOK 2",
     "back": {
      "title": "PRASKÁNÍ KOSTÍ",
-     "panel": "",
      "bonusGroup": "Ghulové",
      "bonusEffect": "TLAK",
      "neutralGroup": "Kostlivci",
@@ -937,7 +930,6 @@
     "secondary": "bez utoku: SEBE, LÉČENÍ 2",
     "back": {
      "title": "PRASKÁNÍ KOSTÍ",
-     "panel": "",
      "bonusGroup": "Ghulové",
      "bonusEffect": "+2 KROK",
      "neutralGroup": "Zombie",
@@ -959,7 +951,6 @@
     "secondary": "bez utoku: DOSAH 5: KRVÁCENÍ",
     "back": {
      "title": "PRASKÁNÍ KOSTÍ",
-     "panel": "",
      "bonusGroup": "Ghulové",
      "bonusEffect": "SEBE: SKRYTÍ",
      "neutralGroup": "Zombie",
@@ -981,7 +972,6 @@
     "secondary": "KROK 2; ÚTOK 2",
     "back": {
      "title": "PŘEMNOŽENÍ",
-     "panel": "",
      "bonusGroup": "Potkani",
      "bonusEffect": "TLAK",
      "neutralGroup": "Hadi",
@@ -1003,7 +993,6 @@
     "secondary": "KROK 2; ÚTOK 1",
     "back": {
      "title": "PŘEMNOŽENÍ",
-     "panel": "",
      "bonusGroup": "Pavouci",
      "bonusEffect": "KRVÁCENÍ",
      "neutralGroup": "Hadi",
@@ -1025,7 +1014,6 @@
     "secondary": "Bez útoku: KROK +2",
     "back": {
      "title": "RYCHLÝ VÝPAD",
-     "panel": "",
      "bonusGroup": "Potkani",
      "bonusEffect": "VZAD 1",
      "neutralGroup": "Pavouci",
@@ -1047,7 +1035,6 @@
     "secondary": "Bez útoku: KROK 2;",
     "back": {
      "title": "RYCHLÝ VÝPAD",
-     "panel": "",
      "bonusGroup": "Hadi",
      "bonusEffect": "OCHROMENÍ",
      "neutralGroup": "Potkani",
@@ -1069,7 +1056,6 @@
     "secondary": "KROK 3; ÚTOK 2",
     "back": {
      "title": "RYCHLÝ VÝPAD",
-     "panel": "",
      "bonusGroup": "Hadi",
      "bonusEffect": "+1 ÚTOK",
      "neutralGroup": "Potkani",
@@ -1091,7 +1077,6 @@
     "secondary": "Bez útoku: KROK 3",
     "back": {
      "title": "JEDOVATÝ STISK",
-     "panel": "",
      "bonusGroup": "Hadi",
      "bonusEffect": "KŘEČ",
      "neutralGroup": "Pavouci",
@@ -1113,7 +1098,6 @@
     "secondary": "KROK 2; ÚTOK 2",
     "back": {
      "title": "JEDOVATÝ STISK",
-     "panel": "",
      "bonusGroup": "Pavouci",
      "bonusEffect": "POSTIH",
      "neutralGroup": "Hadi",
@@ -1135,7 +1119,6 @@
     "secondary": "Bez útoku: KROK 3",
     "back": {
      "title": "JEDOVATÝ STISK",
-     "panel": "",
      "bonusGroup": "Pavouci",
      "bonusEffect": "SEBE: HOJENÍ",
      "neutralGroup": "Potkani",
@@ -1157,7 +1140,6 @@
     "secondary": "Bez útoku: KROK 4",
     "back": {
      "title": "JEDOVATÝ STISK",
-     "panel": "",
      "bonusGroup": "Potkani",
      "bonusEffect": "SEBE: SKRYTÍ",
      "neutralGroup": "Pavouci",
@@ -1179,7 +1161,6 @@
     "secondary": "DOSAH 4: ÚTOK 3",
     "back": {
      "title": "DRŽENÍ POZICE",
-     "panel": "",
      "bonusGroup": "Lučištníci",
      "bonusEffect": "+1 ÚTOK",
      "neutralGroup": "Vrhači",
@@ -1201,7 +1182,6 @@
     "secondary": "Bez útoku: KROK 4",
     "back": {
      "title": "DRŽENÍ POZICE",
-     "panel": "",
      "bonusGroup": "Kušníci",
      "bonusEffect": "PRŮRAZ 1",
      "neutralGroup": "Lučištníci",
@@ -1223,7 +1203,6 @@
     "secondary": "DOSAH 4: ÚTOK 4",
     "back": {
      "title": "DRŽENÍ POZICE",
-     "panel": "",
      "bonusGroup": "Vrhači",
      "bonusEffect": "TLAK",
      "neutralGroup": "Kušníci",
@@ -1245,7 +1224,6 @@
     "secondary": "Bez útoku: KROK 3",
     "back": {
      "title": "ZÓNA SMRTI",
-     "panel": "",
      "bonusGroup": "Kušníci",
      "bonusEffect": "VZAD 1",
      "neutralGroup": "Vrhači",
@@ -1267,7 +1245,6 @@
     "secondary": "DOSAH 5: ÚTOK 3",
     "back": {
      "title": "ZÓNA SMRTI",
-     "panel": "",
      "bonusGroup": "Lučištníci",
      "bonusEffect": "KRVÁCENÍ",
      "neutralGroup": "Kušníci",
@@ -1289,7 +1266,6 @@
     "secondary": "Bez cíle: OBRANA 2",
     "back": {
      "title": "ZÓNA SMRTI",
-     "panel": "",
      "bonusGroup": "Vrhači",
      "bonusEffect": "KŘEČ",
      "neutralGroup": "Lučištníci",
@@ -1311,7 +1287,6 @@
     "secondary": "DOSAH 4: ÚTOK 4",
     "back": {
      "title": "SOUSTŘEDĚNÝ ÚTOK",
-     "panel": "",
      "bonusGroup": "Kušníci",
      "bonusEffect": "PRŮRAZ 2",
      "neutralGroup": "Vrhači",
@@ -1333,7 +1308,6 @@
     "secondary": "Bez nepřítele: KROK 2",
     "back": {
      "title": "SOUSTŘEDĚNÝ ÚTOK",
-     "panel": "",
      "bonusGroup": "Lučištníci",
      "bonusEffect": "SEBE: SKRYTÍ",
      "neutralGroup": "Kušníci",
@@ -1355,7 +1329,6 @@
     "secondary": "Bez pohybu: DOSAH 5: ÚTOK 1",
     "back": {
      "title": "SOUSTŘEDĚNÝ ÚTOK",
-     "panel": "",
      "bonusGroup": "Vrhači",
      "bonusEffect": "+2 KROK",
      "neutralGroup": "Lučištníci",
