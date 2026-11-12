@@ -1,0 +1,184 @@
+/* Card faces. Plain CSS (not a CSS module): the Tailwind loader in next.config.ts
+   treats every *.css file as global CSS. All sizes are in template pixels; the card is scaled as a whole by CardFrame. */
+
+.ttd-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 28px;
+  font-family: var(--font-fira), "Fira Sans", sans-serif;
+  line-height: 1.22;
+  -webkit-font-smoothing: antialiased;
+}
+
+.ttd-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  user-select: none;
+  pointer-events: none;
+}
+
+.ttd-tint {
+  position: absolute;
+  inset: 0;
+  mix-blend-mode: color;
+  pointer-events: none;
+}
+
+.ttd-box {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: stretch;
+  text-align: center;
+  overflow: hidden;
+}
+
+.ttd-boxTop {
+  justify-content: flex-start;
+}
+
+.ttd-title {
+  font-family: var(--font-cinzel), "Cinzel", serif;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1.05;
+}
+
+.ttd-line + .ttd-line {
+  margin-top: 0.32em;
+}
+
+.ttd-caps {
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.ttd-kw {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.12em;
+  white-space: nowrap;
+  vertical-align: -0.22em;
+  font-weight: 700;
+}
+
+.ttd-kwWord {
+  margin-right: 0.08em;
+}
+
+.ttd-icon {
+  display: inline-block;
+  width: 1.3em;
+  height: 1.3em;
+  object-fit: contain;
+}
+
+.ttd-kwValue {
+  font-weight: 700;
+}
+
+/* --- Player card (dark stone) --- */
+
+.ttd-player {
+  color: #f1ece2;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.85);
+}
+
+.ttd-player .ttd-caps {
+  color: #f6dfa8;
+}
+
+.ttd-time {
+  font-family: var(--font-cinzel), "Cinzel", serif;
+  font-weight: 700;
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  line-height: 1;
+}
+
+.ttd-timeR {
+  font-size: 0.38em;
+  margin-left: 0.04em;
+  align-self: flex-end;
+  margin-bottom: 0.32em;
+}
+
+.ttd-meta {
+  font-family: var(--font-cinzel), "Cinzel", serif;
+  font-weight: 700;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.ttd-badge {
+  font-size: 22px;
+  letter-spacing: 0.12em;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 2px solid currentColor;
+}
+
+.ttd-code {
+  font-size: 26px;
+  letter-spacing: 0.08em;
+  opacity: 0.8;
+}
+
+.ttd-footer {
+  font-family: var(--font-cinzel), "Cinzel", serif;
+  font-weight: 700;
+  font-size: 24px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  position: absolute;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.ttd-gem {
+  font-family: var(--font-cinzel), "Cinzel", serif;
+  font-weight: 700;
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40px;
+  color: #fff;
+}
+
+/* --- NPC cards (light stone) --- */
+
+.ttd-npc {
+  color: #26221d;
+}
+
+.ttd-npc .ttd-caps {
+  color: #5a2a14;
+}
+
+.ttd-label {
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #6d6457;
+}
+
+.ttd-npcGroup {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  font-family: var(--font-cinzel), "Cinzel", serif;
+  font-weight: 700;
+}

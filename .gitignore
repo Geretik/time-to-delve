@@ -1,16 +1,30 @@
+# dependencies
+/node_modules
+/.pnp
+.pnp.*
+
+# next.js
+/.next/
+/out/
+/build
+next-env.d.ts
+*.tsbuildinfo
+
+# testing
+/coverage
+
 # OS / editor
 .DS_Store
 Thumbs.db
-.vscode/
+*:Zone.Identifier
 .idea/
 
-# Závislosti a buildy
-node_modules/
-vendor/
-dist/
-build/
+# debug
+npm-debug.log*
 
-# Prostředí
-.env
-.env.*
+# env files
+.env*
 !.env.example
+
+# vercel
+.vercel

@@ -1,0 +1,1368 @@
+{
+ "classes": [
+  {
+   "slug": "barbar",
+   "name": "Barbar",
+   "kind": "hero",
+   "color": "#9a3b2a",
+   "hp": 22,
+   "passive": "Na konci kola:\npokud jsi zabil nepřítele nebo stojíš vedle nepřítele → FURY jinak → CALM\nRage = máš FURY a zároveň stále stojíš vedle nepřítele\n(neboli RAGE: jsi vedle nepřítele a minulé jsi skončil vedle nepřítele nebo jsi někoho zabil.)\n\n(Barbar má žeton FURY / CALM který otočí buď podle situace na konci kola a nebo pomocí karty,\npodmínka Rage se vyhodnotí při aktivaci karty)",
+   "description": "",
+   "subgroups": [],
+   "sortOrder": 0
+  },
+  {
+   "slug": "strelec",
+   "name": "Střelec",
+   "kind": "hero",
+   "color": "#3f7a45",
+   "hp": 14,
+   "passive": "KOŘIST: Na konci kola (nebo za 1 Čas) označ 1 nepřítele v DOSAHU 5 jako Primární kořist.\nLimit: 1 primární + 2 vedlejší. Trvá do smrti cíle nebo přeznačení.\nPOZDĚ: Nepřítel je na časové ose na pozici 5 a více.\nODRAZ: Pokud aktuální cíl splňuje podmínku, zopakuj celý ÚTOK na další cíl v DOSAHU 2,\nkterý leží za posledním zasaženým (dle pravidel ODSUNU). Každý cíl může být zasažen jen jednou.",
+   "description": "",
+   "subgroups": [],
+   "sortOrder": 1
+  },
+  {
+   "slug": "sermir",
+   "name": "Šermíř",
+   "kind": "hero",
+   "color": "#2f5f9a",
+   "hp": 18,
+   "passive": "NICIACE: Efekt platí, jen pokud je toto tvá první akce ve tvém tahu.\nFLOW: Karty mají symboly (#, $, %, &, @). Pokud v jednom tahu\nzahraješ 2 karty se stejným symbolem, stojí každá o 1 Čas méně (celkem -2).\nPŘIPRAVA: Pokud je dobírací balíček prázdný, můžeš zaplatit 1 ČAS a odhazovacá balíček\nlícem nahoru přesunout na místo dobíracího (bez míchání).",
+   "description": "",
+   "subgroups": [],
+   "sortOrder": 2
+  },
+  {
+   "slug": "nemrtvi",
+   "name": "Nemrtví",
+   "kind": "npc",
+   "color": "#55705f",
+   "hp": null,
+   "passive": "",
+   "description": "Kostlivci: Popraskaný kostlivec, Obrněný kostlivec, Obézní kostlivec\nZombie: Hnilobná zombie, Mokvající zombie, Kousavá zombie\nGhulové: Hladový ghul, Prokletý ghul, Vříštivý ghul",
+   "subgroups": [
+    "Kostlivci",
+    "Zombie",
+    "Ghulové"
+   ],
+   "sortOrder": 10
+  },
+  {
+   "slug": "havet",
+   "name": "Havěť",
+   "kind": "npc",
+   "color": "#7a5a34",
+   "hp": null,
+   "passive": "",
+   "description": "Potkani: Prašivý potkan, Morový potkan, Vypelichaný potkan\nHadi: Skalní had, Jedovatý had, Škrtící had\nPavouci: Jeskynní pavouk, Snovačský pavouk, Křižácký pavouk",
+   "subgroups": [
+    "Potkani",
+    "Hadi",
+    "Pavouci"
+   ],
+   "sortOrder": 11
+  },
+  {
+   "slug": "strelci-npc",
+   "name": "Střelci",
+   "kind": "npc",
+   "color": "#7a4040",
+   "hp": null,
+   "passive": "",
+   "description": "Lučištníci: Hlídkový lučištník, Stepní lučištník, Zkušený lučištník\nKušníci: Těžký kušník, Hradební kušník, Nájemný kušník\nVrhači: Zákeřný vrhač, Zručný vrhač, Šilhavý vrhač",
+   "subgroups": [
+    "Lučištníci",
+    "Kušníci",
+    "Vrhači"
+   ],
+   "sortOrder": 12
+  }
+ ],
+ "cards": [
+  {
+   "kind": "player",
+   "classSlug": "barbar",
+   "name": "Pohotovost",
+   "data": {
+    "top": {
+     "code": "B01",
+     "reaction": false,
+     "time": 3,
+     "text": "KROK 1; PŘIPRAV zbraň nebo náhodný předmět",
+     "textUpgraded": "KROK 3; PŘIPRAV zbraň nebo náhodný předmět\nVEDLE KRVÁCÍ nebo CALM:\n(PŘIPRAV další náhodný předmět)"
+    },
+    "bottom": {
+     "code": "B02",
+     "reaction": false,
+     "time": 5,
+     "text": "SEBE: ZRAŇ 1; OBLOUK PLOŠNĚ: ÚTOK 4",
+     "textUpgraded": "SEBE: ZRAŇ 2; OBLOUK PLOŠNĚ: ÚTOK 5, RAGE: (ÚTOK +2)"
+    },
+    "symbol": "",
+    "note": ""
+   }
+  },
+  {
+   "kind": "player",
+   "classSlug": "barbar",
+   "name": "Odveta",
+   "data": {
+    "top": {
+     "code": "B11",
+     "reaction": true,
+     "time": 2,
+     "text": "Nepřítel ukončí kolo vedle tebe: VEDLE: ÚTOK 2, KRVÁCENÍ",
+     "textUpgraded": "Nepřítel ukončí kolo vedle tebe: VEDLE: ÚTOK 2, KRVÁCENÍ, TLAK; SEBE: Aktivuj FURY"
+    },
+    "bottom": {
+     "code": "B12",
+     "reaction": false,
+     "time": 4,
+     "text": "2x VEDLE: ÚTOK 2, CÍL KRVÁCÍ: (ÚTOK +1, TLAK)",
+     "textUpgraded": "2x VEDLE: ÚTOK 2, KRVÁCENÍ , CÍL již KRVÁCEL: (ÚTOK +2, TLAK)"
+    },
+    "symbol": "",
+    "note": ""
+   }
+  },
+  {
+   "kind": "player",
+   "classSlug": "barbar",
+   "name": "Hybnost",
+   "data": {
+    "top": {
+     "code": "B21",
+     "reaction": false,
+     "time": 3,
+     "text": "SEBE: ZRAŇ 1; KROK 2; VEDLE: ÚTOK 3, KRVÁCENÍ",
+     "textUpgraded": "SEBE: ZRAŇ 2, TLAK; KROK 2; VEDLE: ÚTOK 4, KRVÁCENÍ, Cíl krvácel před útokem: (KŘEČ)"
+    },
+    "bottom": {
+     "code": "B22",
+     "reaction": false,
+     "time": 4,
+     "text": "VEDLE: ÚTOK 4;\nPokud ses pohnul: (ÚTOK +2)",
+     "textUpgraded": "VEDLE: ÚTOK 4; Pokud ses pohnul: (ÚTOK +3); RAGE: (ODSUN 2 Následuj nepřítele)"
+    },
+    "symbol": "",
+    "note": ""
+   }
+  },
+  {
+   "kind": "player",
+   "classSlug": "barbar",
+   "name": "Tvrdohlavost",
+   "data": {
+    "top": {
+     "code": "B31",
+     "reaction": true,
+     "time": 3,
+     "text": "Před pohybem nepřítele z pole VEDLE: VEDLE: ÚTOK 3, KŘEČ (Nepřítel přehodnotí cíl.)",
+     "textUpgraded": "Před pohybem nepřítele z pole VEDLE: VEDLE: ÚTOK 4, KŘEČ, TLAK"
+    },
+    "bottom": {
+     "code": "B32",
+     "reaction": false,
+     "time": 4,
+     "text": "DOSAH 3: LÉČENÍ 3, RAGE: LÉČENÍ +1",
+     "textUpgraded": "SEBE: TLAK; KROK 2; DOSAH 3: LÉČENÍ 4, RAGE: LÉČENÍ +2"
+    },
+    "symbol": "",
+    "note": ""
+   }
+  },
+  {
+   "kind": "player",
+   "classSlug": "barbar",
+   "name": "Fanatizmus",
+   "data": {
+    "top": {
+     "code": "B41",
+     "reaction": false,
+     "time": 2,
+     "text": "SEBE: ZRAŇ 2;\nCONE1 PLOŠNĚ: ÚTOK 2, KRVÁCENÍ",
+     "textUpgraded": "SEBE: ZRAŇ 2;\nOBLOUK PLOŠNĚ: ÚTOK 2, KRVÁCENÍ, Cíl již Krvácel: KŘEČ"
+    },
+    "bottom": {
+     "code": "B42",
+     "reaction": false,
+     "time": 6,
+     "text": "SEBE: LÉČENÍ 4, RAGE: (LÉČENÍ +3)",
+     "textUpgraded": "Sebe Léčení 4 + BONUS, RAGE: Léčení +4"
+    },
+    "symbol": "",
+    "note": ""
+   }
+  },
+  {
+   "kind": "player",
+   "classSlug": "barbar",
+   "name": "Nezastavitelnost",
+   "data": {
+    "top": {
+     "code": "B51",
+     "reaction": false,
+     "time": 3,
+     "text": "SKOK 4; První přeskočený nepřítel: POSTIH",
+     "textUpgraded": "SKOK 5; První přeskočený nepřítel: POSTIH a TLAK"
+    },
+    "bottom": {
+     "code": "B52",
+     "reaction": false,
+     "time": 7,
+     "text": "SEBE: ZRAŇ 2;\nVEDLE: ÚTOK 7, ODSUN 2,  VZAD 2,\nRAGE: (utok +4)",
+     "textUpgraded": "SEBE: ZRAŇ 3; VEDLE: ÚTOK 8, ODSUN 4;\nRAGE: (ODSUN +4; Následuj nepřítele; náraz do zdi: ZRAŇ 1 za nevyužitý ODSUN);\nDOHLED: VZAD 2"
+    },
+    "symbol": "",
+    "note": ""
+   }
+  },
+  {
+   "kind": "player",
+   "classSlug": "barbar",
+   "name": "Štvanice",
+   "data": {
+    "top": {
+     "code": "B61",
+     "reaction": false,
+     "time": 3,
+     "text": "KROK 4; každý KROK lze jednotlivě nahradit: VEDLE: ODSUN 1 (Následuj)",
+     "textUpgraded": "KROK 5; každý KROK lze jednotlivě nahradit: VEDLE: ODSUN 1 (Následuj)"
+    },
+    "bottom": {
+     "code": "B62",
+     "reaction": false,
+     "time": 4,
+     "text": "DOSAH 3: ÚTOK 3, CALM: (ÚTOK +2, PŘÍTAH 2)",
+     "textUpgraded": "SEBE: ZRAŇ 1;\nDOSAH 4: ÚTOK 5, CALM: (ÚTOK +2, PŘÍTAH 3, KŘEČ)"
+    },
+    "symbol": "",
+    "note": ""
+   }
+  },
+  {
+   "kind": "player",
+   "classSlug": "barbar",
+   "name": "Poprava",
+   "data": {
+    "top": {
+     "code": "B71",
+     "reaction": false,
+     "time": 2,
+     "text": "SEBE: ZRAŇ 1, TLAK;\nVEDLE: ÚTOK 3, PRŮRAZ 3, RAGE: (ÚTOK +1)",
+     "textUpgraded": "SEBE: ZRAŇ 2, TLAK;\nVEDLE: ÚTOK 4, PRŮRAZ 3, RAGE: (ÚTOK +3)"
+    },
+    "bottom": {
+     "code": "B72",
+     "reaction": false,
+     "time": 5,
+     "text": "VEDLE: ÚTOK 5, Zabiješ cíl: (SEBE: LÉČENÍ 2)",
+     "textUpgraded": "VEDLE: ÚTOK 6, Zabiješ cíl: (SEBE: LÉČENÍ 4)"
+    },
+    "symbol": "",
+    "note": ""
+   }
+  },
+  {
+   "kind": "player",
+   "classSlug": "barbar",
+   "name": "Provokace",
+   "data": {
+    "top": {
+     "code": "B81",
+     "reaction": false,
+     "time": 2,
+     "text": "DOSAH 3, CILE 2: PŘÍTAH 1;\nSEBE: Aktivuj FURY",
+     "textUpgraded": "DOSAH 3, CILE 3: PŘÍTAH 2;\nSEBE: Aktivuj FURY"
+    },
+    "bottom": {
+     "code": "B82",
+     "reaction": false,
+     "time": 4,
+     "text": "VEDLE: ÚTOK 1, KRVÁCENÍ\nSEBE: LÉČENÍ 1, RAGE: (LÉČENÍ +2)",
+     "textUpgraded": "VEDLE: ÚTOK 1, KRVÁCENÍ\nSEBE: LÉČENÍ 2, RAGE: (LÉČENÍ +2, HOJENÍ)"
+    },
+    "symbol": "",
+    "note": ""
+   }
+  },
+  {
+   "kind": "player",
+   "classSlug": "barbar",
+   "name": "Adrenalin",
+   "data": {
+    "top": {
+     "code": "B91",
+     "reaction": false,
+     "time": 5,
+     "text": "DOSAH 2, CÍLE 2: BONUS;\nRozděl VPŘED 4 mezi zacílené (MIMO SEBE)",
+     "textUpgraded": "DOSAH 2,CÍLE ∞,  BONUS;\nRozděl VPŘED 5 mezi zacílené (MIMO SEBE)"
+    },
+    "bottom": {
+     "code": "B92",
+     "reaction": false,
+     "time": 6,
+     "text": "SKOK 2;\nCÍLE 2: ÚTOK 4, RAGE: (ÚTOK +1)\n(vyhodnocení Rage před skokem)",
+     "textUpgraded": "SKOK 3;\nCÍLE 2: ÚTOK 5, RAGE: (ÚTOK +1; SEBE: BONUS před útokem)\n(vyhodnocení Rage před skokem)"
+    },
+    "symbol": "",
+    "note": ""
+   }
+  },
+  {
+   "kind": "player",
+   "classSlug": "strelec",
+   "name": "Rozvaha",
+   "data": {
+    "top": {
+     "code": "S01",
+     "reaction": false,
+     "time": 2,
+     "text": "KROK 1;\nSEBE: HOJENÍ, PŘIPRAV boty;\nMáš-li alespoň 2 KOŘISTI: PŘIPRAV libovolný.",
+     "textUpgraded": ""
+    },
+    "bottom": {
+     "code": "S02",
+     "reaction": false,
+     "time": 4,
+     "text": "DOSAH 4: ÚTOK 2, KOŘIST: (VZAD 1; ODRAZ);\nKROK 3;",
+     "textUpgraded": ""
+    },
+    "symbol": "",
+    "note": ""
+   }
+  },
+  {
+   "kind": "player",
+   "classSlug": "strelec",
+   "name": "Verdikt",
+   "data": {
+    "top": {
+     "code": "S11",
+     "reaction": false,
+     "time": 2,
+     "text": "DOSAH 4: ÚTOK 1; POZDĚ: (TLAK, ODRAZ)",
+     "textUpgraded": ""
+    },
+    "bottom": {
+     "code": "S12",
+     "reaction": false,
+     "time": 7,
+     "text": "DOSAH 5: ÚTOK 4; POZDĚ: (ÚTOK +3);\nNavíc zasáhne všechny tvé KOŘISTI v DOSAHU.",
+     "textUpgraded": ""
+    },
+    "symbol": "",
+    "note": ""
+   }
+  },
+  {
+   "kind": "player",
+   "classSlug": "strelec",
+   "name": "Nedostupnost",
+   "data": {
+    "top": {
+     "code": "S21",
+     "reaction": true,
+     "time": 2,
+     "text": "KOŘIST se pohne na pole VEDLE:\nKROK 1; SKRYTÍ; (Nepřítel přehodnotí cíl.)",
+     "textUpgraded": ""
+    },
+    "bottom": {
+     "code": "S22",
+     "reaction": false,
+     "time": 4,
+     "text": "DOSAH 4: ÚTOK 3, KOŘIST: (POSTIH);\nOznač jako Vedlejší kořist.",
+     "textUpgraded": ""
+    },
+    "symbol": "",
+    "note": ""
+   }
+  },
+  {
+   "kind": "player",
+   "classSlug": "strelec",
+   "name": "Chladnokrevnost",
+   "data": {
+    "top": {
+     "code": "S31",
+     "reaction": false,
+     "time": 3,
+     "text": "VEDLE: KŘEČ; Označ jako Vedlejší kořist;\nKROK 1.",
+     "textUpgraded": ""
+    },
+    "bottom": {
+     "code": "S32",
+     "reaction": false,
+     "time": 6,
+     "text": "DOSAH 4: ÚTOK 2, VZAD 3; KOŘIST: (VZAD +2)",
+     "textUpgraded": ""
+    },
+    "symbol": "",
+    "note": ""
+   }
+  },
+  {
+   "kind": "player",
+   "classSlug": "strelec",
+   "name": "Léčka",
+   "data": {
+    "top": {
+     "code": "S41",
+     "reaction": false,
+     "time": 4,
+     "text": "KROK 2; Na pole VEDLE polož NÁVNADU (1 HP, priorita).\nPři zničení nebo položení nové → OKOLO (Návnady): KRVÁCENÍ, KŘEČ.",
+     "textUpgraded": ""
+    },
+    "bottom": {
+     "code": "S42",
+     "reaction": false,
+     "time": 5,
+     "text": "DOSAH 3: ÚTOK 5, ODSUN 2;\nPokud je na mapě NÁVNADA: (ÚTOK +2)",
+     "textUpgraded": ""
+    },
+    "symbol": "",
+    "note": ""
+   }
+  },
+  {
+   "kind": "player",
+   "classSlug": "strelec",
+   "name": "Kontrola",
+   "data": {
+    "top": {
+     "code": "S51",
+     "reaction": false,
+     "time": 4,
+     "text": "SEBE: PŘIPRAV vše, ODSTRANĚNÍ KRVÁCENÍ, HOJENÍ;\nSPOJENEC DOSAH 2: HOJENÍ.",
+     "textUpgraded": ""
+    },
+    "bottom": {
+     "code": "S52",
+     "reaction": false,
+     "time": 5,
+     "text": "DOSAH 3: ÚTOK 4, KŘEČ;\nPŘÍTAH 1 ke SPOJENCI; KOŘIST: (PŘÍTAH +1, ÚTOK + 1)",
+     "textUpgraded": ""
+    },
+    "symbol": "",
+    "note": ""
+   }
+  },
+  {
+   "kind": "player",
+   "classSlug": "strelec",
+   "name": "Trpělivost",
+   "data": {
+    "top": {
+     "code": "S61",
+     "reaction": false,
+     "time": 3,
+     "text": "DOSAH 3: ÚTOK 3; POZDĚ: (ÚTOK +2)",
+     "textUpgraded": ""
+    },
+    "bottom": {
+     "code": "S62",
+     "reaction": false,
+     "time": 4,
+     "text": "První ÚTOK v tvém dalším kole má ÚTOK +4;\nPokud usmrtíš cíl: Všechny tvé KOŘISTI: VZAD 2.",
+     "textUpgraded": ""
+    },
+    "symbol": "",
+    "note": ""
+   }
+  },
+  {
+   "kind": "player",
+   "classSlug": "strelec",
+   "name": "Pozornost",
+   "data": {
+    "top": {
+     "code": "S71",
+     "reaction": false,
+     "time": 2,
+     "text": "DOSAH 4: ÚTOK 1; POZDĚ: (POSTIH, ODRAZ);\nOznač prvního jako Vedlejší kořist.",
+     "textUpgraded": ""
+    },
+    "bottom": {
+     "code": "S72",
+     "reaction": true,
+     "time": 3,
+     "text": "KOŘIST se pohne v DOSAHU 3:\nDOSAH 3: ÚTOK 5.",
+     "textUpgraded": ""
+    },
+    "symbol": "",
+    "note": ""
+   }
+  },
+  {
+   "kind": "player",
+   "classSlug": "strelec",
+   "name": "Pátrání",
+   "data": {
+    "top": {
+     "code": "S81",
+     "reaction": false,
+     "time": 3,
+     "text": "DOSAH 4: ÚTOK 2; KOŘIST: (POSTIH)\nSEBE: SKRYTÍ;",
+     "textUpgraded": ""
+    },
+    "bottom": {
+     "code": "S82",
+     "reaction": false,
+     "time": 5,
+     "text": "DOSAH 2, Ttrojúhelník (3 pole): ÚTOK 4;\nOznač jednoho zasaženého jako Vedlejší kořist.",
+     "textUpgraded": ""
+    },
+    "symbol": "",
+    "note": ""
+   }
+  },
+  {
+   "kind": "player",
+   "classSlug": "strelec",
+   "name": "Průnik",
+   "data": {
+    "top": {
+     "code": "S91",
+     "reaction": false,
+     "time": 3,
+     "text": "SKOK 4;\nUděl TLAK jednomu přeskočenému nepříteli.",
+     "textUpgraded": ""
+    },
+    "bottom": {
+     "code": "S92",
+     "reaction": false,
+     "time": 6,
+     "text": "LINIE (2–4 pole): ÚTOK 6; SEBE ODSUN 2 (opačně).\nZákladní ÚTOK se zvyšuje o +2 za každou KOŘIST zasaženou tímto útokem",
+     "textUpgraded": ""
+    },
+    "symbol": "",
+    "note": ""
+   }
+  },
+  {
+   "kind": "player",
+   "classSlug": "sermir",
+   "name": "Prostor",
+   "data": {
+    "top": {
+     "code": "E01",
+     "reaction": false,
+     "time": 3,
+     "text": "KROK 1; ÚTOK 2; PŘIPRAV zbroj.",
+     "textUpgraded": ""
+    },
+    "bottom": {
+     "code": "E02",
+     "reaction": false,
+     "time": 5,
+     "text": "Útok 4; vedle trojuhelník(3 pole); MAM BOON: (Push 2 všem).",
+     "textUpgraded": ""
+    },
+    "symbol": "#",
+    "note": ""
+   }
+  },
+  {
+   "kind": "player",
+   "classSlug": "sermir",
+   "name": "Předvídavost",
+   "data": {
+    "top": {
+     "code": "E11",
+     "reaction": true,
+     "time": 2,
+     "text": "pokud sousedící nepřítel při útoku na mě hodí modifikátor 0 či nižší: utok 3",
+     "textUpgraded": ""
+    },
+    "bottom": {
+     "code": "E12",
+     "reaction": false,
+     "time": 4,
+     "text": "utok 3 range 3 pull 2 pokud nepřítel okolo sebe nemá spojence dej si boon",
+     "textUpgraded": ""
+    },
+    "symbol": "$",
+    "note": ""
+   }
+  },
+  {
+   "kind": "player",
+   "classSlug": "sermir",
+   "name": "Rovnováha",
+   "data": {
+    "top": {
+     "code": "E21",
+     "reaction": false,
+     "time": 4,
+     "text": "Útok 4; CÍL ROZHOZEN:(Útok +1; Zranění)",
+     "textUpgraded": ""
+    },
+    "bottom": {
+     "code": "E22",
+     "reaction": false,
+     "time": 5,
+     "text": "HEAL 3, SEBE: BONUS; PŘIPRAV libovolný.",
+     "textUpgraded": ""
+    },
+    "symbol": "%",
+    "note": ""
+   }
+  },
+  {
+   "kind": "player",
+   "classSlug": "sermir",
+   "name": "Souhra",
+   "data": {
+    "top": {
+     "code": "E31",
+     "reaction": false,
+     "time": 2,
+     "text": "utok 1 rozhození Mám Boon:(utok +2)",
+     "textUpgraded": ""
+    },
+    "bottom": {
+     "code": "E32",
+     "reaction": false,
+     "time": 4,
+     "text": "krok 2 push 4 (když posouváš spojence dej mu quicken za každý nevyžitý push)",
+     "textUpgraded": ""
+    },
+    "symbol": "&",
+    "note": ""
+   }
+  },
+  {
+   "kind": "player",
+   "classSlug": "sermir",
+   "name": "Respekt",
+   "data": {
+    "top": {
+     "code": "E41",
+     "reaction": true,
+     "time": 3,
+     "text": "pokud na mě chce zautočit nepřítel co začal svuj tah vedle mě: odzbrojení, sebe Boon",
+     "textUpgraded": ""
+    },
+    "bottom": {
+     "code": "E42",
+     "reaction": false,
+     "time": 4,
+     "text": "Útok 4; Pierce 2; INICIACE: (rozhození)",
+     "textUpgraded": ""
+    },
+    "symbol": "@",
+    "note": ""
+   }
+  },
+  {
+   "kind": "player",
+   "classSlug": "sermir",
+   "name": "Vzestup",
+   "data": {
+    "top": {
+     "code": "E51",
+     "reaction": false,
+     "time": 3,
+     "text": "skok 3 sebe Boon",
+     "textUpgraded": ""
+    },
+    "bottom": {
+     "code": "E52",
+     "reaction": false,
+     "time": 6,
+     "text": "Útok 6; Self-Heal 2 INICIACE: (nahraď selfheal za heal 3 dosah 2)",
+     "textUpgraded": ""
+    },
+    "symbol": "@",
+    "note": ""
+   }
+  },
+  {
+   "kind": "player",
+   "classSlug": "sermir",
+   "name": "Kadence",
+   "data": {
+    "top": {
+     "code": "E61",
+     "reaction": false,
+     "time": 3,
+     "text": "utok 2 rozhození",
+     "textUpgraded": ""
+    },
+    "bottom": {
+     "code": "E62",
+     "reaction": false,
+     "time": 6,
+     "text": "Skok 3; Útok 4 cíle 2; INICIACE: (Delay 2)",
+     "textUpgraded": ""
+    },
+    "symbol": "$",
+    "note": ""
+   }
+  },
+  {
+   "kind": "player",
+   "classSlug": "sermir",
+   "name": "Mistrovství",
+   "data": {
+    "top": {
+     "code": "E71",
+     "reaction": false,
+     "time": 3,
+     "text": "Krok 2 quicken 2 dosah 2 INICIACE (sebe Boon)",
+     "textUpgraded": ""
+    },
+    "bottom": {
+     "code": "E72",
+     "reaction": false,
+     "time": 7,
+     "text": "Útok 9; rozhození; Pokud cíl zemře: Všichni nepřátelé v dohledu získají Bane",
+     "textUpgraded": ""
+    },
+    "symbol": "&",
+    "note": ""
+   }
+  },
+  {
+   "kind": "player",
+   "classSlug": "sermir",
+   "name": "Vliv",
+   "data": {
+    "top": {
+     "code": "E81",
+     "reaction": false,
+     "time": 3,
+     "text": "PŘIPRAV vše; INICIACE: (Příští ÚTOK má PRŮRAZ 2)",
+     "textUpgraded": ""
+    },
+    "bottom": {
+     "code": "E82",
+     "reaction": false,
+     "time": 5,
+     "text": "utok 2 plošně na okolní ROZHOZEN: (odzbrojení)",
+     "textUpgraded": ""
+    },
+    "symbol": "$",
+    "note": ""
+   }
+  },
+  {
+   "kind": "player",
+   "classSlug": "sermir",
+   "name": "Střežení",
+   "data": {
+    "top": {
+     "code": "E91",
+     "reaction": false,
+     "time": 2,
+     "text": "Krok 1; Útok 1; INICIACE: (krok +1, Delay 1)",
+     "textUpgraded": ""
+    },
+    "bottom": {
+     "code": "E92",
+     "reaction": false,
+     "time": 4,
+     "text": "Obrana 3 a stávám se pro nepřítele prioritou za každý utok vedený proti mě quicken 1",
+     "textUpgraded": ""
+    },
+    "symbol": "#",
+    "note": ""
+   }
+  },
+  {
+   "kind": "npc",
+   "classSlug": "nemrtvi",
+   "name": "Krvavé milosrdenství",
+   "data": {
+    "code": "XN1",
+    "time": 7,
+    "priority": "zranění spojenci",
+    "main": "SEBE: ZRAŇ 1; SPOJENEC DOSAH 3: LÉČENÍ 3",
+    "secondaryKind": "zbytek",
+    "secondary": "KROK 2; VEDLE: ÚTOK 2",
+    "back": {
+     "title": "HNIJÍCÍ TICHO",
+     "panel": "",
+     "bonusGroup": "Kostlivci",
+     "bonusEffect": "KRVÁCENÍ",
+     "neutralGroup": "Zombie",
+     "penaltyGroup": "Ghulové",
+     "penaltyEffect": "VPŘED 1"
+    }
+   }
+  },
+  {
+   "kind": "npc",
+   "classSlug": "nemrtvi",
+   "name": "Hrobový chlad",
+   "data": {
+    "code": "XN2",
+    "time": 10,
+    "priority": "Připraven",
+    "main": "Všichni v DOSAH 3: POSTIH; VZAD 2",
+    "secondaryKind": "zbytek",
+    "secondary": "KROK 4; VEDLE: ÚTOK 2",
+    "back": {
+     "title": "HNIJÍCÍ TICHO",
+     "panel": "",
+     "bonusGroup": "Kostlivci",
+     "bonusEffect": "+1 ÚTOK",
+     "neutralGroup": "Ghulové",
+     "penaltyGroup": "Zombie",
+     "penaltyEffect": "SEBE: KRVÁCENÍ"
+    }
+   }
+  },
+  {
+   "kind": "npc",
+   "classSlug": "nemrtvi",
+   "name": "Mrtvolná ztuhlost",
+   "data": {
+    "code": "XN3",
+    "time": 9,
+    "priority": "blízko",
+    "main": "KROK 2 SEBE KŘEČ; OBRANA 2; LÉČENÍ 2",
+    "secondaryKind": "vyjimka",
+    "secondary": "plné životy: ÚTOK 3",
+    "back": {
+     "title": "HNIJÍCÍ TICHO",
+     "panel": "",
+     "bonusGroup": "Kostlivci",
+     "bonusEffect": "SEBE: BONUS",
+     "neutralGroup": "Ghulové",
+     "penaltyGroup": "Zombie",
+     "penaltyEffect": "SEBE: TLAK"
+    }
+   }
+  },
+  {
+   "kind": "npc",
+   "classSlug": "nemrtvi",
+   "name": "Hnilobný sprint",
+   "data": {
+    "code": "XN4",
+    "time": 9,
+    "priority": "ne-TLAK",
+    "main": "KROK 7; VEDLE: TLAK; SEBE: TLAK",
+    "secondaryKind": "zbytek",
+    "secondary": "KROK 3; VEDLE: ÚTOK 1, TLAK",
+    "back": {
+     "title": "HLADOVÝ VÝPAD",
+     "panel": "",
+     "bonusGroup": "Zombie",
+     "bonusEffect": "SEBE: HOJENÍ",
+     "neutralGroup": "Ghulové",
+     "penaltyGroup": "Kostlivci",
+     "penaltyEffect": "-1 ÚTOK"
+    }
+   }
+  },
+  {
+   "kind": "npc",
+   "classSlug": "nemrtvi",
+   "name": "Drtivé odstrčení",
+   "data": {
+    "code": "XN5",
+    "time": 8,
+    "priority": "daleko",
+    "main": "KROK 3; VEDLE: ÚTOK 2; ODSUN 2",
+    "secondaryKind": "vyjimka",
+    "secondary": "bez útoku: +2 KROK",
+    "back": {
+     "title": "HLADOVÝ VÝPAD",
+     "panel": "",
+     "bonusGroup": "Zombie",
+     "bonusEffect": "+2 ÚTOK",
+     "neutralGroup": "Kostlivci",
+     "penaltyGroup": "Ghulové",
+     "penaltyEffect": "BONUS (hráč)"
+    }
+   }
+  },
+  {
+   "kind": "npc",
+   "classSlug": "nemrtvi",
+   "name": "Mrtvolný dopad",
+   "data": {
+    "code": "XN6",
+    "time": 10,
+    "priority": "zraněný",
+    "main": "SKOK 4; VEDLE: ÚTOK 5",
+    "secondaryKind": "vyjimka",
+    "secondary": "bez útoku: SKOK +2; VEDLE: ÚTOK 2.",
+    "back": {
+     "title": "HLADOVÝ VÝPAD",
+     "panel": "",
+     "bonusGroup": "Zombie",
+     "bonusEffect": "POSTIH (hráč)",
+     "neutralGroup": "Kostlivci",
+     "penaltyGroup": "Ghulové",
+     "penaltyEffect": "-2 ÚTOK"
+    }
+   }
+  },
+  {
+   "kind": "npc",
+   "classSlug": "nemrtvi",
+   "name": "Mrtvolný vír",
+   "data": {
+    "code": "XN7",
+    "time": 7,
+    "priority": "Zdravý",
+    "main": "OBLOUK: ÚTOK 2; KRVÁCENÍ",
+    "secondaryKind": "zbytek",
+    "secondary": "KROK 2; VEDLE: ÚTOK 2",
+    "back": {
+     "title": "PRASKÁNÍ KOSTÍ",
+     "panel": "",
+     "bonusGroup": "Ghulové",
+     "bonusEffect": "TLAK",
+     "neutralGroup": "Kostlivci",
+     "penaltyGroup": "Zombie",
+     "penaltyEffect": "SEBE: KŘEČ"
+    }
+   }
+  },
+  {
+   "kind": "npc",
+   "classSlug": "nemrtvi",
+   "name": "Zlomení odporu",
+   "data": {
+    "code": "XN8",
+    "time": 8,
+    "priority": "Spáč",
+    "main": "KROK 2; VEDLE: ÚTOK 4; TLAK",
+    "secondaryKind": "vyjimka",
+    "secondary": "bez utoku: SEBE, LÉČENÍ 2",
+    "back": {
+     "title": "PRASKÁNÍ KOSTÍ",
+     "panel": "",
+     "bonusGroup": "Ghulové",
+     "bonusEffect": "+2 KROK",
+     "neutralGroup": "Zombie",
+     "penaltyGroup": "Kostlivci",
+     "penaltyEffect": "SEBE: ZRAŇ 2"
+    }
+   }
+  },
+  {
+   "kind": "npc",
+   "classSlug": "nemrtvi",
+   "name": "Vyvržení žluči",
+   "data": {
+    "code": "XN9",
+    "time": 9,
+    "priority": "ne-KRVÁCÍ",
+    "main": "KROK 1; DOSAH 3: ÚTOK 4; KRVÁCENÍ",
+    "secondaryKind": "vyjimka",
+    "secondary": "bez utoku: DOSAH 5: KRVÁCENÍ",
+    "back": {
+     "title": "PRASKÁNÍ KOSTÍ",
+     "panel": "",
+     "bonusGroup": "Ghulové",
+     "bonusEffect": "SEBE: SKRYTÍ",
+     "neutralGroup": "Zombie",
+     "penaltyGroup": "Kostlivci",
+     "penaltyEffect": "-2 KROK"
+    }
+   }
+  },
+  {
+   "kind": "npc",
+   "classSlug": "havet",
+   "name": "Volání roje",
+   "data": {
+    "code": "XH1",
+    "time": 9,
+    "priority": "Samotář",
+    "main": "VYVOLEJ: Havěť; SEBE: OCHROM",
+    "secondaryKind": "zbytek",
+    "secondary": "KROK 2; ÚTOK 2",
+    "back": {
+     "title": "PŘEMNOŽENÍ",
+     "panel": "",
+     "bonusGroup": "Potkani",
+     "bonusEffect": "TLAK",
+     "neutralGroup": "Hadi",
+     "penaltyGroup": "Pavouci",
+     "penaltyEffect": "SEBE: KŘEČ"
+    }
+   }
+  },
+  {
+   "kind": "npc",
+   "classSlug": "havet",
+   "name": "Hnízdění",
+   "data": {
+    "code": "XH2",
+    "time": 8,
+    "priority": "Nejslabší",
+    "main": "VYVOLEJ: Havěť; SEBE: OCHROM",
+    "secondaryKind": "zbytek",
+    "secondary": "KROK 2; ÚTOK 1",
+    "back": {
+     "title": "PŘEMNOŽENÍ",
+     "panel": "",
+     "bonusGroup": "Pavouci",
+     "bonusEffect": "KRVÁCENÍ",
+     "neutralGroup": "Hadi",
+     "penaltyGroup": "Potkani",
+     "penaltyEffect": "SEBE: ZRAŇ 1"
+    }
+   }
+  },
+  {
+   "kind": "npc",
+   "classSlug": "havet",
+   "name": "Bleskový útok",
+   "data": {
+    "code": "XH3",
+    "time": 5,
+    "priority": "Nejblíže",
+    "main": "KROK 4; ÚTOK 2 TLAK",
+    "secondaryKind": "vyjimka",
+    "secondary": "Bez útoku: KROK +2",
+    "back": {
+     "title": "RYCHLÝ VÝPAD",
+     "panel": "",
+     "bonusGroup": "Potkani",
+     "bonusEffect": "VZAD 1",
+     "neutralGroup": "Pavouci",
+     "penaltyGroup": "Hadi",
+     "penaltyEffect": "VPŘED 2"
+    }
+   }
+  },
+  {
+   "kind": "npc",
+   "classSlug": "havet",
+   "name": "Výpad z trávy",
+   "data": {
+    "code": "XH4",
+    "time": 6,
+    "priority": "Zraněn",
+    "main": "SKOK 3; ÚTOK 2 POSTIH",
+    "secondaryKind": "vyjimka",
+    "secondary": "Bez útoku: KROK 2;",
+    "back": {
+     "title": "RYCHLÝ VÝPAD",
+     "panel": "",
+     "bonusGroup": "Hadi",
+     "bonusEffect": "OCHROMENÍ",
+     "neutralGroup": "Potkani",
+     "penaltyGroup": "Pavouci",
+     "penaltyEffect": "BONUS"
+    }
+   }
+  },
+  {
+   "kind": "npc",
+   "classSlug": "havet",
+   "name": "Rozlezení",
+   "data": {
+    "code": "XH5",
+    "time": 5,
+    "priority": "Zdravý",
+    "main": "KROK 5; CÍL 2; ÚTOK 1",
+    "secondaryKind": "zbytek",
+    "secondary": "KROK 3; ÚTOK 2",
+    "back": {
+     "title": "RYCHLÝ VÝPAD",
+     "panel": "",
+     "bonusGroup": "Hadi",
+     "bonusEffect": "+1 ÚTOK",
+     "neutralGroup": "Potkani",
+     "penaltyGroup": "Pavouci",
+     "penaltyEffect": "-1 POHYB"
+    }
+   }
+  },
+  {
+   "kind": "npc",
+   "classSlug": "havet",
+   "name": "Ochromující kousnutí",
+   "data": {
+    "code": "XH6",
+    "time": 7,
+    "priority": "Připraven",
+    "main": "VEDLE: ÚTOK 1; OCHROMENÍ",
+    "secondaryKind": "vyjimka",
+    "secondary": "Bez útoku: KROK 3",
+    "back": {
+     "title": "JEDOVATÝ STISK",
+     "panel": "",
+     "bonusGroup": "Hadi",
+     "bonusEffect": "KŘEČ",
+     "neutralGroup": "Pavouci",
+     "penaltyGroup": "Potkani",
+     "penaltyEffect": "SEBE: POSTIH"
+    }
+   }
+  },
+  {
+   "kind": "npc",
+   "classSlug": "havet",
+   "name": "Snovačská past",
+   "data": {
+    "code": "XH7",
+    "time": 8,
+    "priority": "Nejblíže",
+    "main": "DOSAH 3: KŘEČ; TLAK",
+    "secondaryKind": "zbytek",
+    "secondary": "KROK 2; ÚTOK 2",
+    "back": {
+     "title": "JEDOVATÝ STISK",
+     "panel": "",
+     "bonusGroup": "Pavouci",
+     "bonusEffect": "POSTIH",
+     "neutralGroup": "Hadi",
+     "penaltyGroup": "Potkani",
+     "penaltyEffect": "SEBE: OCHROM"
+    }
+   }
+  },
+  {
+   "kind": "npc",
+   "classSlug": "havet",
+   "name": "Toxické sevření",
+   "data": {
+    "code": "XH8",
+    "time": 6,
+    "priority": "Zdravý",
+    "main": "VEDLE: ZRAŇ 3 KRVÁCENÍ",
+    "secondaryKind": "vyjimka",
+    "secondary": "Bez útoku: KROK 3",
+    "back": {
+     "title": "JEDOVATÝ STISK",
+     "panel": "",
+     "bonusGroup": "Pavouci",
+     "bonusEffect": "SEBE: HOJENÍ",
+     "neutralGroup": "Potkani",
+     "penaltyGroup": "Hadi",
+     "penaltyEffect": "SEBE: TLAK"
+    }
+   }
+  },
+  {
+   "kind": "npc",
+   "classSlug": "havet",
+   "name": "Krysařův hněv",
+   "data": {
+    "code": "XH9",
+    "time": 7,
+    "priority": "Samotář",
+    "main": "VEDLE: ÚTOK 2; CÍLE 2",
+    "secondaryKind": "vyjimka",
+    "secondary": "Bez útoku: KROK 4",
+    "back": {
+     "title": "JEDOVATÝ STISK",
+     "panel": "",
+     "bonusGroup": "Potkani",
+     "bonusEffect": "SEBE: SKRYTÍ",
+     "neutralGroup": "Pavouci",
+     "penaltyGroup": "Hadi",
+     "penaltyEffect": "SEBE: VZAD 1"
+    }
+   }
+  },
+  {
+   "kind": "npc",
+   "classSlug": "strelci-npc",
+   "name": "Smrtící míření",
+   "data": {
+    "code": "XS1",
+    "time": 9,
+    "priority": "Zdravý",
+    "main": "DOSAH 6: ÚTOK 5",
+    "secondaryKind": "zbytek",
+    "secondary": "DOSAH 4: ÚTOK 3",
+    "back": {
+     "title": "DRŽENÍ POZICE",
+     "panel": "",
+     "bonusGroup": "Lučištníci",
+     "bonusEffect": "+1 ÚTOK",
+     "neutralGroup": "Vrhači",
+     "penaltyGroup": "Kušníci",
+     "penaltyEffect": "VZAD 1"
+    }
+   }
+  },
+  {
+   "kind": "npc",
+   "classSlug": "strelci-npc",
+   "name": "Ústupová salva",
+   "data": {
+    "code": "XS2",
+    "time": 7,
+    "priority": "Blízko",
+    "main": "KROK 2; DOSAH 4: ÚTOK 2",
+    "secondaryKind": "vyjimka",
+    "secondary": "Bez útoku: KROK 4",
+    "back": {
+     "title": "DRŽENÍ POZICE",
+     "panel": "",
+     "bonusGroup": "Kušníci",
+     "bonusEffect": "PRŮRAZ 1",
+     "neutralGroup": "Lučištníci",
+     "penaltyGroup": "Vrhači",
+     "penaltyEffect": "SEBE: TLAK"
+    }
+   }
+  },
+  {
+   "kind": "npc",
+   "classSlug": "strelci-npc",
+   "name": "Déšť projektilů",
+   "data": {
+    "code": "XS3",
+    "time": 10,
+    "priority": "Všichni",
+    "main": "DOSAH 4: CÍLE 3; ÚTOK 2",
+    "secondaryKind": "zbytek",
+    "secondary": "DOSAH 4: ÚTOK 4",
+    "back": {
+     "title": "DRŽENÍ POZICE",
+     "panel": "",
+     "bonusGroup": "Vrhači",
+     "bonusEffect": "TLAK",
+     "neutralGroup": "Kušníci",
+     "penaltyGroup": "Lučištníci",
+     "penaltyEffect": "SEBE: OCHROM"
+    }
+   }
+  },
+  {
+   "kind": "npc",
+   "classSlug": "strelci-npc",
+   "name": "Zmrzačení",
+   "data": {
+    "code": "XS4",
+    "time": 8,
+    "priority": "Připraven",
+    "main": "DOSAH 4: ÚTOK 3; KŘEČ",
+    "secondaryKind": "vyjimka",
+    "secondary": "Bez útoku: KROK 3",
+    "back": {
+     "title": "ZÓNA SMRTI",
+     "panel": "",
+     "bonusGroup": "Kušníci",
+     "bonusEffect": "VZAD 1",
+     "neutralGroup": "Vrhači",
+     "penaltyGroup": "Lučištníci",
+     "penaltyEffect": "-2 DOSAH"
+    }
+   }
+  },
+  {
+   "kind": "npc",
+   "classSlug": "strelci-npc",
+   "name": "Horičí/Toxické hroty",
+   "data": {
+    "code": "XS5",
+    "time": 8,
+    "priority": "Ne-KRVÁCÍ",
+    "main": "DOSAH 5: ÚTOK 2; KRVÁCENÍ",
+    "secondaryKind": "zbytek",
+    "secondary": "DOSAH 5: ÚTOK 3",
+    "back": {
+     "title": "ZÓNA SMRTI",
+     "panel": "",
+     "bonusGroup": "Lučištníci",
+     "bonusEffect": "KRVÁCENÍ",
+     "neutralGroup": "Kušníci",
+     "penaltyGroup": "Vrhači",
+     "penaltyEffect": "-1 ÚTOK"
+    }
+   }
+  },
+  {
+   "kind": "npc",
+   "classSlug": "strelci-npc",
+   "name": "Přišpendlení",
+   "data": {
+    "code": "XS6",
+    "time": 7,
+    "priority": "Spáč",
+    "main": "DOSAH 4: ÚTOK 2; VZAD 2",
+    "secondaryKind": "vyjimka",
+    "secondary": "Bez cíle: OBRANA 2",
+    "back": {
+     "title": "ZÓNA SMRTI",
+     "panel": "",
+     "bonusGroup": "Vrhači",
+     "bonusEffect": "KŘEČ",
+     "neutralGroup": "Lučištníci",
+     "penaltyGroup": "Kušníci",
+     "penaltyEffect": "SEBE: KŘEČ"
+    }
+   }
+  },
+  {
+   "kind": "npc",
+   "classSlug": "strelci-npc",
+   "name": "Průrazná šipka",
+   "data": {
+    "code": "XS7",
+    "time": 9,
+    "priority": "Zdravý",
+    "main": "DOSAH 5: ÚTOK 3; PRŮRAZ 2",
+    "secondaryKind": "zbytek",
+    "secondary": "DOSAH 4: ÚTOK 4",
+    "back": {
+     "title": "SOUSTŘEDĚNÝ ÚTOK",
+     "panel": "",
+     "bonusGroup": "Kušníci",
+     "bonusEffect": "PRŮRAZ 2",
+     "neutralGroup": "Vrhači",
+     "penaltyGroup": "Lučištníci",
+     "penaltyEffect": "VPŘED 1"
+    }
+   }
+  },
+  {
+   "kind": "npc",
+   "classSlug": "strelci-npc",
+   "name": "Ostražitý úkrok",
+   "data": {
+    "code": "XS8",
+    "time": 7,
+    "priority": "Nejblíže",
+    "main": "VEDLE: ÚTOK 2; ODSUN 2",
+    "secondaryKind": "vyjimka",
+    "secondary": "Bez nepřítele: KROK 2",
+    "back": {
+     "title": "SOUSTŘEDĚNÝ ÚTOK",
+     "panel": "",
+     "bonusGroup": "Lučištníci",
+     "bonusEffect": "SEBE: SKRYTÍ",
+     "neutralGroup": "Kušníci",
+     "penaltyGroup": "Vrhači",
+     "penaltyEffect": "BONUS"
+    }
+   }
+  },
+  {
+   "kind": "npc",
+   "classSlug": "strelci-npc",
+   "name": "Taktický přesun",
+   "data": {
+    "code": "XS9",
+    "time": 8,
+    "priority": "Daleko",
+    "main": "SEBE: BONUS; KROK 2",
+    "secondaryKind": "vyjimka",
+    "secondary": "Bez pohybu: DOSAH 5: ÚTOK 1",
+    "back": {
+     "title": "SOUSTŘEDĚNÝ ÚTOK",
+     "panel": "",
+     "bonusGroup": "Vrhači",
+     "bonusEffect": "+2 KROK",
+     "neutralGroup": "Lučištníci",
+     "penaltyGroup": "Kušníci",
+     "penaltyEffect": "SEBE: OCHROM"
+    }
+   }
+  }
+ ]
+}

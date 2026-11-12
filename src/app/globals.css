@@ -1,0 +1,62 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ink: #14171c;
+  --color-panel: #1c2027;
+  --color-panel-2: #232831;
+  --color-line: #313843;
+  --color-line-strong: #46505d;
+  --color-bone: #ece6da;
+  --color-muted: #a39d92;
+  --color-faint: #767168;
+  --color-gold: #c8a15a;
+  --color-gold-strong: #e0bc74;
+  --color-danger: #d9695a;
+  --color-ok: #7fb37a;
+
+  --font-display: var(--font-cinzel), "Cinzel", serif;
+  --font-sans: var(--font-fira), "Fira Sans", system-ui, sans-serif;
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  background: var(--color-ink);
+  color: var(--color-bone);
+  font-family: var(--font-sans);
+}
+
+::selection {
+  background: color-mix(in srgb, var(--color-gold) 45%, transparent);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 2px;
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-md border border-line-strong bg-panel-2 px-3.5 py-2 text-sm font-semibold text-bone transition-colors hover:border-gold/70 hover:bg-panel disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .btn-primary {
+    @apply border-gold bg-gold text-ink hover:border-gold-strong hover:bg-gold-strong;
+  }
+  .btn-danger {
+    @apply border-danger/60 text-danger hover:border-danger hover:bg-danger/10;
+  }
+  .btn-ghost {
+    @apply border-transparent bg-transparent hover:bg-panel-2;
+  }
+  .field {
+    @apply block w-full rounded-md border border-line bg-ink px-3 py-2 text-sm text-bone placeholder:text-faint focus:border-gold focus:outline-none;
+  }
+  .label {
+    @apply mb-1 block text-xs font-semibold tracking-wide text-muted uppercase;
+  }
+  .panel {
+    @apply rounded-xl border border-line bg-panel;
+  }
+}
