@@ -1,0 +1,37 @@
+# Weekly dependency updates. Minor and patch versions come as one pull request per ecosystem,
+# major versions one by one (they usually need a look at the changelog).
+# Security updates are separate: turn on "Dependabot security updates" in the repository settings.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: Europe/Prague
+    open-pull-requests-limit: 5
+    groups:
+      minor-and-patch:
+        update-types: [minor, patch]
+      # These must move together even across a major version.
+      next:
+        patterns: [next, eslint-config-next]
+        update-types: [major]
+      react:
+        patterns: [react, react-dom, "@types/react", "@types/react-dom"]
+        update-types: [major]
+      tailwind:
+        patterns: [tailwindcss, "@tailwindcss/*"]
+        update-types: [major]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: Europe/Prague
+    groups:
+      actions:
+        patterns: ["*"]
