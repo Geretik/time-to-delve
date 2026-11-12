@@ -3,7 +3,7 @@ import { createHash, randomBytes, scrypt as scryptCb, timingSafeEqual } from "no
 import { promisify } from "node:util";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { and, eq, gt, isNull } from "drizzle-orm";
+import { and, eq, gt, isNull, sql } from "drizzle-orm";
 import { db } from "./db";
 import { sessions, tokens, users } from "./db/schema";
 
@@ -62,7 +62,9 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
     .select({ id: users.id, name: users.name, email: users.email })
     .from(sessions)
     .innerJoin(users, eq(users.id, sessions.userId))
-    .where(and(eq(sessions.id, hashToken(token)), gt(sessions.expiresAt, new Date())))
+    // Compare with the database clock: reading the current time while rendering
+    // trips Cache Components' prerender check.
+    .where(and(eq(sessions.id, hashToken(token)), gt(sessions.expiresAt, sql`now()`)))
     .limit(1);
   return row ?? null;
 }
@@ -112,7 +114,7 @@ export async function findToken(kind: TokenKind, token: string) {
         eq(tokens.id, hashToken(token)),
         eq(tokens.kind, kind),
         isNull(tokens.usedAt),
-        gt(tokens.expiresAt, new Date()),
+        gt(tokens.expiresAt, sql`now()`),
       ),
     )
     .limit(1);

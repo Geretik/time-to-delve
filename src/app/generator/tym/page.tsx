@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { and, asc, desc, eq, gt, isNull } from "drizzle-orm";
+import { and, asc, desc, eq, gt, isNull, sql } from "drizzle-orm";
 import { Suspense } from "react";
 import { InviteForm } from "@/components/auth/InviteForm";
 import { PageLoading } from "@/components/Loading";
@@ -31,7 +31,7 @@ async function Team() {
       })
       .from(tokens)
       .leftJoin(users, eq(users.id, tokens.createdById))
-      .where(and(eq(tokens.kind, "invite"), isNull(tokens.usedAt), gt(tokens.expiresAt, new Date())))
+      .where(and(eq(tokens.kind, "invite"), isNull(tokens.usedAt), gt(tokens.expiresAt, sql`now()`)))
       .orderBy(desc(tokens.createdAt)),
   ]);
 
