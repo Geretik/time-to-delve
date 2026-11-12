@@ -1,0 +1,99 @@
+name: CI
+
+# Every push and pull request: lint, typecheck, tests (against Postgres) and a production build.
+# A push to main that passes is then deployed to Vercel production.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+env:
+  NODE_VERSION: 26 # same as the Vercel project
+
+jobs:
+  test:
+    name: Lint, typecheck, test, build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: ttd
+          POSTGRES_PASSWORD: ttd
+          POSTGRES_DB: ttd_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U ttd -d ttd_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      TEST_DATABASE_URL: postgres://ttd:ttd@localhost:5432/ttd_test
+      # The build imports the db module, which needs a connection string (it doesn't query).
+      DATABASE_URL: postgres://ttd:ttd@localhost:5432/ttd_test
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Next.js build cache
+        uses: actions/cache@v6
+        with:
+          path: .next/cache
+          key: nextjs-${{ hashFiles('package-lock.json') }}-${{ hashFiles('src/**', 'public/**', 'next.config.ts') }}
+          restore-keys: nextjs-${{ hashFiles('package-lock.json') }}-
+
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+
+  deploy:
+    name: Deploy to Vercel (production)
+    needs: test
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment:
+      name: production
+      url: ${{ steps.deploy.outputs.url }}
+    concurrency:
+      group: vercel-production
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      # Vercel builds the uploaded source with `npm run vercel-build`
+      # (database migrations, seed of an empty database, next build).
+      - name: Deploy
+        id: deploy
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ vars.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID }}
+        run: |
+          if [ -z "$VERCEL_TOKEN" ] || [ -z "$VERCEL_ORG_ID" ] || [ -z "$VERCEL_PROJECT_ID" ]; then
+            echo "::error::Chybí secret VERCEL_TOKEN nebo proměnné VERCEL_ORG_ID / VERCEL_PROJECT_ID (README, sekce Nasazení)."
+            exit 1
+          fi
+          url=$(npx --yes vercel@65.14.0 deploy --prod --yes --token "$VERCEL_TOKEN" --meta githubCommitSha="$GITHUB_SHA")
+          echo "url=$url" >> "$GITHUB_OUTPUT"

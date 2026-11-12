@@ -27,6 +27,17 @@ npm run dev
 Na http://localhost:3000/registrace si založ první účet (dokud v databázi žádný není, registrace je otevřená).
 Bez `RESEND_API_KEY` se e-maily (pozvánky, obnova hesla) jen vypíšou do konzole serveru.
 
+## Testy
+
+```bash
+docker compose up -d   # testy běží proti Postgresu z docker-compose
+npm test               # nebo npm run test:watch
+```
+
+Testy (Vitest, složka `tests/`) si založí vlastní databázi `ttd_test`, před každým během ji smažou a aplikují
+migrace – vývojová data v `ttd` zůstanou. Jinou databázi jde zadat přes `TEST_DATABASE_URL`; její název musí
+končit na `_test`.
+
 ## Proměnné prostředí
 
 | Proměnná | Popis |
@@ -36,6 +47,23 @@ Bez `RESEND_API_KEY` se e-maily (pozvánky, obnova hesla) jen vypíšou do konzo
 | `EMAIL_FROM` | Odesílatel, např. `Time to Delve <karty@tvoje-domena.cz>`. Doména musí být ověřená v Resendu. |
 | `APP_URL` | Adresa webu pro odkazy v e-mailech. Na Vercelu se doplní sama z produkční domény. |
 | `INVITE_CODE` | Nepovinný sdílený zvací kód pro registraci bez e-mailové pozvánky. |
+| `CRON_SECRET` | Jen na Vercelu: tajemství, kterým se Vercel Cron prokazuje při denním úklidu prošlých přihlášení a pozvánek (`/api/cron/prune`, rozvrh ve `vercel.json`). |
+
+## CI a nasazení
+
+GitHub Actions ([.github/workflows/ci.yml](.github/workflows/ci.yml)) při každém pushi a pull requestu spustí lint,
+typecheck, testy proti Postgresu a produkční build. Push do `main`, který projde, se nasadí na Vercel do produkce
+(`vercel deploy --prod`; Vercel při buildu aplikuje migrace).
+
+Nasazení z Actions potřebuje v repozitáři na GitHubu:
+
+| Kde | Název | Hodnota |
+| --- | --- | --- |
+| Secret | `VERCEL_TOKEN` | Token z https://vercel.com/account/tokens (`gh secret set VERCEL_TOKEN`) |
+| Variable | `VERCEL_ORG_ID` | `orgId` z `.vercel/project.json` |
+| Variable | `VERCEL_PROJECT_ID` | `projectId` z `.vercel/project.json` |
+
+Ručně jde nasadit pořád přes `npx vercel deploy --prod`.
 
 ## Změny databáze
 
