@@ -17,12 +17,14 @@ import {
   hashPassword,
   requireUser,
   safeEqual,
+  tokenId,
   verifyLogin,
 } from "@/lib/auth";
-import { db } from "@/lib/db";
+import { db, type Executor } from "@/lib/db";
 import { tokens, users } from "@/lib/db/schema";
-import { appUrl, linkEmail, sendEmail } from "@/lib/email";
-import { TOO_MANY, clientIp, rateLimit } from "@/lib/rate-limit";
+import { appUrl, emailSetupError, linkEmail, sendEmail } from "@/lib/email";
+import { isTokenId, isUuid } from "@/lib/ids";
+import { TOO_MANY, type Limit, clearRateLimit, clientIp, rateLimit, refundRateLimit } from "@/lib/rate-limit";
 
 export type FormState =
   | { error?: string; message?: string; values?: Record<string, string> }
@@ -34,7 +36,29 @@ const password = z.string().min(8, "Heslo musí mít aspoň 8 znaků.").max(200)
 const values = (fd: FormData, ...keys: string[]) =>
   Object.fromEntries(keys.map((k) => [k, String(fd.get(k) ?? "")]));
 
+/**
+ * Changes to who has an account (registration, removing a member) run one at a time, so
+ * their checks can't race. Call first thing in the transaction; held until it ends.
+ */
+const lockAccounts = (tx: Executor) => tx.execute(sql`select pg_advisory_xact_lock(hashtext('ttd:accounts'))`);
+
 // --- Login / logout ------------------------------------------------------------
+
+// Failed logins: per address against one machine guessing at many accounts; per account
+// from one address, which is what locks a guesser out; and per account from anywhere,
+// against a spread-out attack. The last one is deliberately loose – it is the only one
+// a stranger can use to keep the owner out, and it takes many addresses to reach. Even then
+// the owner gets in through the password reset, which signs in and clears these counters.
+const LOGIN_IP: Limit = { name: "login-ip", max: 30, minutes: 15 };
+const LOGIN_FROM_IP: Limit = { name: "login-email-ip", max: 10, minutes: 15 };
+const LOGIN_ACCOUNT: Limit = { name: "login-email", max: 60, minutes: 15 };
+
+const loginAttempts = (address: string, ip: string | null) => ({ fromIp: `${address}|${ip ?? ""}`, account: address });
+
+async function forgetLoginAttempts(address: string, ip: string | null) {
+  const attempts = loginAttempts(address, ip);
+  await Promise.all([clearRateLimit(LOGIN_FROM_IP, attempts.fromIp), clearRateLimit(LOGIN_ACCOUNT, attempts.account)]);
+}
 
 export async function login(_prev: FormState, formData: FormData): Promise<FormState> {
   const parsed = z
@@ -43,17 +67,25 @@ export async function login(_prev: FormState, formData: FormData): Promise<FormS
   const keep = values(formData, "email");
   if (!parsed.success) return { error: parsed.error.issues[0].message, values: keep };
 
-  // Per address against one machine guessing, per account against a spread-out attack.
-  // A locked-out owner can still get in through the password reset.
+  // Every attempt is counted before the password is checked (so a burst of simultaneous
+  // guesses can't get ahead of the count) and a successful one is taken back below.
+  const ip = await clientIp();
+  const attempts = loginAttempts(parsed.data.email, ip);
   const allowed =
-    (await rateLimit("login-ip", await clientIp(), 30, 15)) &&
-    (await rateLimit("login-email", parsed.data.email, 10, 15));
-  if (!allowed) return { error: TOO_MANY, values: keep };
+    (await rateLimit(LOGIN_IP, ip)) &&
+    (await rateLimit(LOGIN_FROM_IP, attempts.fromIp)) &&
+    (await rateLimit(LOGIN_ACCOUNT, attempts.account));
+  if (!allowed) {
+    return { error: `${TOO_MANY} Dovnitř se dostaneš i přes „Zapomenuté heslo“.`, values: keep };
+  }
 
   const [user] = await db.select().from(users).where(eq(users.email, parsed.data.email)).limit(1);
   if (!(await verifyLogin(parsed.data.password, user?.passwordHash)) || !user) {
     return { error: "Nesprávný e-mail nebo heslo.", values: keep };
   }
+  // Only failures count: the owner starts clean, and the address gets its one attempt back
+  // (not more – signing in to your own account mustn't buy fresh guesses at someone else's).
+  await Promise.all([refundRateLimit(LOGIN_IP, ip), forgetLoginAttempts(user.email, ip)]);
   await createSession(user.id);
   redirect("/generator");
 }
@@ -87,7 +119,7 @@ export async function register(_prev: FormState, formData: FormData): Promise<Fo
     .safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { error: parsed.error.issues[0].message, values: keep };
   const data = parsed.data;
-  if (!(await rateLimit("register-ip", await clientIp(), 10, 60))) return { error: TOO_MANY, values: keep };
+  if (!(await rateLimit({ name: "register-ip", max: 10, minutes: 60 }, await clientIp()))) return { error: TOO_MANY, values: keep };
 
   // Quick checks without a transaction. The invitation is only looked up here (for its
   // e-mail); it's used up below, together with creating the account.
@@ -103,9 +135,9 @@ export async function register(_prev: FormState, formData: FormData): Promise<Fo
   let userId: string;
   try {
     userId = await db.transaction(async (tx) => {
-      // Registrations are rare, so they run one at a time: the checks below can't race
-      // (two "first" accounts on an empty database, two sign-ups with the same e-mail).
-      await tx.execute(sql`select pg_advisory_xact_lock(hashtext('ttd:register'))`);
+      // The checks below can't race (two "first" accounts on an empty database, two
+      // sign-ups with the same e-mail).
+      await lockAccounts(tx);
 
       if (!data.token && !process.env.INVITE_CODE) {
         const [{ n }] = await tx.select({ n: count() }).from(users);
@@ -194,7 +226,7 @@ export async function createInvite(_prev: InviteState, formData: FormData): Prom
 
 export async function revokeInvite(id: string) {
   await requireUser();
-  if (typeof id !== "string" || !/^[0-9a-f]{64}$/.test(id)) return;
+  if (!isTokenId(id)) return;
   await db.delete(tokens).where(and(eq(tokens.id, id), activeToken("invite")));
   refresh();
 }
@@ -203,12 +235,17 @@ export async function revokeInvite(id: string) {
  * Removes a team member: the account, its sessions (cascade) and the invitations it created
  * that nobody has used yet – otherwise it could let itself back in. Cards stay.
  * You can't remove yourself, so there is always at least one account left (an empty
- * database would open the registration to anyone).
+ * database would open the registration to anyone). That only holds if whoever removes
+ * still has an account when the removal happens – hence the lock and the second look:
+ * two members removing each other at once end with one of them, not none.
  */
 export async function removeMember(id: string) {
   const me = await requireUser();
-  if (!z.uuid().safeParse(id).success || id === me.id) return;
+  if (!isUuid(id) || id === me.id) return;
   await db.transaction(async (tx) => {
+    await lockAccounts(tx);
+    const [still] = await tx.select({ id: users.id }).from(users).where(eq(users.id, me.id)).limit(1);
+    if (!still) return;
     await tx.delete(tokens).where(and(eq(tokens.createdById, id), eq(tokens.kind, "invite"), isNull(tokens.usedAt)));
     await tx.delete(users).where(eq(users.id, id));
   });
@@ -217,24 +254,37 @@ export async function removeMember(id: string) {
 
 // --- Password reset -----------------------------------------------------------
 
+const RESET_IP: Limit = { name: "reset-ip", max: 5, minutes: 60 };
+// E-mails to one address, whoever asks. The link lives as long as this limit looks back, so
+// whenever a request is turned down here, a link that still works is already in the mailbox
+// – a stranger using the limit up can't keep the owner from resetting the password.
+const RESET_EMAIL: Limit = { name: "reset-email", max: 3, minutes: 60 };
+const RESET_LINK_HOURS = 1;
+
 export async function requestPasswordReset(_prev: FormState, formData: FormData): Promise<FormState> {
   const parsed = email.safeParse(formData.get("email"));
-  if (!parsed.success) return { error: parsed.error.issues[0].message, values: values(formData, "email") };
+  const keep = values(formData, "email");
+  if (!parsed.success) return { error: parsed.error.issues[0].message, values: keep };
   const address = parsed.data;
 
-  if (!(await rateLimit("reset-ip", await clientIp(), 5, 60))) {
-    return { error: TOO_MANY, values: values(formData, "email") };
-  }
-  // At most 3 e-mails an hour to one address, whoever asks. Over the limit we stay silent,
-  // so the answer below doesn't change.
-  if (await rateLimit("reset-email", address, 3, 60)) {
+  // Known without looking the account up, so saying it gives nothing away.
+  const notSetUp = emailSetupError();
+  if (notSetUp) return { error: notSetUp, values: keep };
+
+  const ip = await clientIp();
+  if (!(await rateLimit(RESET_IP, ip))) return { error: TOO_MANY, values: keep };
+  // Over the per-address limit we stay silent, so the answer below doesn't change.
+  if (await rateLimit(RESET_EMAIL, address)) {
     // Looking the account up and sending happen after the response: neither the answer nor
-    // how long it takes says whether the account exists. A failed send is only logged.
+    // how long it takes says whether the account exists. That also means a failed send can't
+    // be reported; it is logged, and the attempt isn't held against the next try.
     after(async () => {
+      let tokenRow: string | undefined;
       try {
         const [user] = await db.select().from(users).where(eq(users.email, address)).limit(1);
         if (!user) return;
-        const token = await createToken({ kind: "reset", email: user.email, userId: user.id, ttlHours: 1 });
+        const token = await createToken({ kind: "reset", email: user.email, userId: user.id, ttlHours: RESET_LINK_HOURS });
+        tokenRow = tokenId(token);
         const url = `${await appUrl()}/obnova-hesla?token=${token}`;
         const sent = await sendEmail({
           to: user.email,
@@ -247,29 +297,43 @@ export async function requestPasswordReset(_prev: FormState, formData: FormData)
             outro: "Odkaz platí 1 hodinu. Pokud jsi o změnu nežádal(a), e-mail ignoruj – heslo zůstane stejné.",
           }),
         });
-        if (!sent.ok) console.error(`Obnova hesla: e-mail se nepodařilo odeslat (${sent.error}).`);
+        if (!sent.ok) throw new Error(sent.error);
       } catch (e) {
-        console.error("Obnova hesla selhala:", e);
+        console.error("Obnova hesla: e-mail se nepodařilo odeslat.", e);
+        // Nothing reached the mailbox: drop the link nobody has and give the attempt back.
+        await Promise.all([
+          tokenRow && db.delete(tokens).where(eq(tokens.id, tokenRow)),
+          refundRateLimit(RESET_EMAIL, address),
+          refundRateLimit(RESET_IP, ip),
+        ]).catch((cleanupError) => console.error("Obnova hesla: úklid po neúspěšném odeslání selhal.", cleanupError));
       }
     });
   }
-  return { message: "Pokud účet s tímto e-mailem existuje, poslali jsme na něj odkaz pro obnovu hesla." };
+  return {
+    message:
+      "Pokud účet s tímto e-mailem existuje, poslali jsme na něj odkaz pro obnovu hesla. " +
+      "Kdyby nedorazil, podívej se i po dřívějším e-mailu – odkaz platí hodinu.",
+  };
 }
 
 export async function resetPassword(_prev: FormState, formData: FormData): Promise<FormState> {
   const parsed = z.object({ token: z.string().min(1), password }).safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { error: parsed.error.issues[0].message };
-  if (!(await rateLimit("reset-use-ip", await clientIp(), 10, 60))) return { error: TOO_MANY };
+  const ip = await clientIp();
+  if (!(await rateLimit({ name: "reset-use-ip", max: 10, minutes: 60 }, ip))) return { error: TOO_MANY };
 
   const used = await consumeToken("reset", parsed.data.token);
   if (!used?.userId) return { error: "Odkaz je neplatný nebo vypršel. Požádej o nový." };
-  await db
+  const [user] = await db
     .update(users)
     .set({ passwordHash: await hashPassword(parsed.data.password) })
-    .where(eq(users.id, used.userId));
+    .where(eq(users.id, used.userId))
+    .returning({ email: users.email });
   // Other reset links still in the mailbox must not outlive the change.
   await deleteResetTokens(used.userId);
   await destroyAllSessions(used.userId);
+  // Whoever holds the link owns the mailbox: earlier wrong passwords no longer count.
+  if (user) await forgetLoginAttempts(user.email, ip);
   await createSession(used.userId);
   redirect("/generator");
 }

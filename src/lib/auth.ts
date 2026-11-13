@@ -28,20 +28,26 @@ const dbNow = () => sql`now()`;
 const hoursFromNow = (hours: number) => sql`now() + ${hours}::float8 * interval '1 hour'`;
 
 /**
- * Deletes expired sessions, tokens and rate-limit counters. Used invitations stay: they record who invited
- * whom (created_by_id → user_id). Run daily by Vercel Cron, see app/api/cron/prune.
- * The deletes are independent, so one failing doesn't stop the others.
+ * Deletes expired sessions, tokens and rate-limit counters. Used invitations stay: they
+ * record who invited whom (created_by_id → user_id). Run daily by Vercel Cron, see
+ * app/api/cron/prune. The deletes are independent: one failing doesn't stop the others,
+ * it is logged and reported as null instead of a count.
  */
 export async function pruneExpired() {
-  const [deletedSessions, deletedTokens] = await Promise.all([
+  const results = await Promise.allSettled([
     db.delete(sessions).where(lte(sessions.expiresAt, dbNow())).returning({ id: sessions.id }),
     db
       .delete(tokens)
       .where(and(lte(tokens.expiresAt, dbNow()), or(isNull(tokens.usedAt), eq(tokens.kind, "reset"))))
       .returning({ id: tokens.id }),
-    db.delete(rateLimits).where(lte(rateLimits.resetAt, dbNow())),
+    db.delete(rateLimits).where(lte(rateLimits.resetAt, dbNow())).returning({ id: rateLimits.key }),
   ]);
-  return { sessions: deletedSessions.length, tokens: deletedTokens.length };
+  const [deletedSessions, deletedTokens, deletedRateLimits] = results.map((r) => {
+    if (r.status === "fulfilled") return r.value.length;
+    console.error("Úklid selhal:", r.reason);
+    return null;
+  });
+  return { sessions: deletedSessions, tokens: deletedTokens, rateLimits: deletedRateLimits };
 }
 
 // --- Passwords ---------------------------------------------------------------

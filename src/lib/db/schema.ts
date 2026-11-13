@@ -47,12 +47,12 @@ export const tokens = pgTable("tokens", {
 });
 
 /**
- * Fixed-window counters for rate limiting (see lib/rate-limit.ts). One row per limited
- * thing; the key is a SHA-256, so no IP addresses or e-mails are stored here.
+ * Rate-limit counters (see lib/rate-limit.ts). One row per limited thing; the key is
+ * a SHA-256, so no IP addresses or e-mails are stored here. `reset_at` is the moment the
+ * counter is empty again – every counted attempt pushes it further into the future.
  */
 export const rateLimits = pgTable("rate_limits", {
   key: text("key").primaryKey(),
-  count: integer("count").notNull(),
   resetAt: timestamp("reset_at", { withTimezone: true }).notNull(),
 });
 

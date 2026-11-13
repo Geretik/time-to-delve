@@ -7,6 +7,7 @@ import { z } from "zod";
 import { requireUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { cards, classes } from "@/lib/db/schema";
+import { isUuid } from "@/lib/ids";
 
 export type ClassFormState = { error?: string; saved?: boolean } | undefined;
 
@@ -71,7 +72,7 @@ export async function saveClass(_prev: ClassFormState, formData: FormData): Prom
 
 export async function deleteClass(id: string) {
   await requireUser();
-  if (!z.uuid().safeParse(id).success) redirect("/generator/classy");
+  if (!isUuid(id)) redirect("/generator/classy");
   const [{ n }] = await db.select({ n: count() }).from(cards).where(eq(cards.classId, id));
   if (n > 0) {
     // Cards would silently become "obecné" – make the user move or delete them first.

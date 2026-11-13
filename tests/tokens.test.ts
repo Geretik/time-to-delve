@@ -1,7 +1,7 @@
 import { sql } from "drizzle-orm";
 import { beforeEach, describe, expect, it } from "vitest";
 import { consumeToken, createToken, findToken, pruneExpired, tokenId } from "@/lib/auth";
-import { sessions, tokens } from "@/lib/db/schema";
+import { rateLimits, sessions, tokens } from "@/lib/db/schema";
 import { createUser, db, resetDb } from "./db";
 
 beforeEach(resetDb);
@@ -37,7 +37,7 @@ describe("one-time tokens", () => {
 });
 
 describe("pruneExpired", () => {
-  it("deletes expired sessions and tokens but keeps used invitations", async () => {
+  it("deletes expired sessions, tokens and counters but keeps used invitations", async () => {
     const user = await createUser("a@example.com");
     await db.insert(sessions).values([
       { id: "expired", userId: user.id, expiresAt: sql`now() - interval '1 minute'` },
@@ -52,7 +52,13 @@ describe("pruneExpired", () => {
     // Let the used ones expire too.
     await db.update(tokens).set({ expiresAt: sql`now() - interval '1 minute'` }).where(sql`${tokens.usedAt} is not null`);
 
-    expect(await pruneExpired()).toEqual({ sessions: 1, tokens: 2 });
+    await db.insert(rateLimits).values([
+      { key: "drained", resetAt: sql`now() - interval '1 minute'` },
+      { key: "counting", resetAt: sql`now() + interval '1 minute'` },
+    ]);
+
+    expect(await pruneExpired()).toEqual({ sessions: 1, tokens: 2, rateLimits: 1 });
+    expect((await db.select().from(rateLimits)).map((r) => r.key)).toEqual(["counting"]);
     expect((await db.select({ id: sessions.id }).from(sessions)).map((s) => s.id)).toEqual(["live"]);
     const left = (await db.select({ id: tokens.id }).from(tokens)).map((t) => t.id).sort();
     expect(left).toEqual([tokenId(liveInvite), tokenId(usedInvite)].sort());

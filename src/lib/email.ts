@@ -12,9 +12,10 @@ export async function sendEmail(mail: Mail): Promise<{ ok: boolean; error?: stri
   const apiKey = process.env.RESEND_API_KEY;
   const from = process.env.EMAIL_FROM ?? "Time to Delve <onboarding@resend.dev>";
 
-  if (!apiKey && process.env.VERCEL_ENV === "production") {
+  const notSetUp = emailSetupError();
+  if (notSetUp) {
     console.error("RESEND_API_KEY není nastaven – e-mail nebyl odeslán.");
-    return { ok: false, error: "Odesílání e-mailů zatím není nastavené (chybí RESEND_API_KEY)." };
+    return { ok: false, error: notSetUp };
   }
   if (!apiKey) {
     console.info(`[e-mail – RESEND_API_KEY není nastaven]\nKomu: ${mail.to}\nPředmět: ${mail.subject}\n\n${mail.text}`);
@@ -32,6 +33,16 @@ export async function sendEmail(mail: Mail): Promise<{ ok: boolean; error?: stri
     return { ok: false, error: "E-mail se nepodařilo odeslat." };
   }
   return { ok: true };
+}
+
+/**
+ * Why no e-mail can go out at all (production without RESEND_API_KEY), or undefined.
+ * Known before anything is sent, so a form can say so without revealing whom it would write to.
+ */
+export function emailSetupError(): string | undefined {
+  if (!process.env.RESEND_API_KEY && process.env.VERCEL_ENV === "production") {
+    return "Odesílání e-mailů zatím není nastavené (chybí RESEND_API_KEY).";
+  }
 }
 
 /** Absolute base URL for links in e-mails. */
