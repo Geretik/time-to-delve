@@ -44,6 +44,8 @@ jobs:
             echo "::error::Chybí secret BACKUP_DATABASE_URL nebo BACKUP_PASSPHRASE (README, sekce Zálohy)."
             exit 1
           fi
+          # The logs of a public repository are public: hide the database host the scripts print.
+          echo "::add-mask::$(node -e 'console.log(new URL(process.env.DATABASE_URL).hostname)')"
           name="ttd-$(date -u +%Y-%m-%dT%H-%MZ)"
           npm run db:backup -- --sifrovat --vystup "zalohy/$name.dump.enc"
           echo "name=$name" >> "$GITHUB_OUTPUT"
