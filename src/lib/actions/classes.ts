@@ -8,6 +8,7 @@ import { requireUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { cards, classes } from "@/lib/db/schema";
 import { isUuid } from "@/lib/ids";
+import { uniqueClassSlug } from "@/lib/slug";
 
 export type ClassFormState = { error?: string; saved?: boolean } | undefined;
 
@@ -29,17 +30,6 @@ const classSchema = z.object({
   sortOrder: z.coerce.number().int().min(0).max(9999),
 });
 
-function slugify(name: string) {
-  return (
-    name
-      .normalize("NFD")
-      .replace(/\p{Diacritic}/gu, "")
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-|-$/g, "") || "classa"
-  );
-}
-
 export async function saveClass(_prev: ClassFormState, formData: FormData): Promise<ClassFormState> {
   await requireUser();
   const parsed = classSchema.safeParse({
@@ -59,13 +49,8 @@ export async function saveClass(_prev: ClassFormState, formData: FormData): Prom
     return { saved: true };
   }
 
-  const base = slugify(values.name);
-  let slug = base;
-  for (let i = 2; ; i++) {
-    const [taken] = await db.select({ id: classes.id }).from(classes).where(eq(classes.slug, slug)).limit(1);
-    if (!taken) break;
-    slug = `${base}-${i}`;
-  }
+  const taken = await db.select({ slug: classes.slug }).from(classes);
+  const slug = uniqueClassSlug(values.name, new Set(taken.map((c) => c.slug)));
   const [created] = await db.insert(classes).values({ ...values, slug }).returning({ id: classes.id });
   redirect(`/generator/classy/${created.id}`);
 }
