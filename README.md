@@ -11,6 +11,8 @@ Web hry Time to Delve: veřejná úvodní stránka a týmový generátor karet (
   pro její čas (1 čas ≈ ÚTOK 1 … 7 časů ≈ ÚTOK 12, reakce ×1,5). Ceny jsou v [src/lib/keywords.ts](src/lib/keywords.ts),
   výpočet v [src/lib/power.ts](src/lib/power.ts), vysvětlení pro tým na stránce Ikonografie.
 - Export karty do PNG v rozlišení šablony (864 × 1216 px).
+- **Import z Excelu** (Karty → Import z Excelu): doplní a aktualizuje karty ze sešitu, jako je
+  `podklady/Time to Delve.xlsx`. Viz [Import z Excelu](#import-z-excelu).
 - Účty: registrace jen na e-mailovou pozvánku (stránka Tým), obnova hesla e-mailem přes Resend.
 
 ## Stack
@@ -117,6 +119,28 @@ Bez dalšího nastavení míří obnova do databáze z `.env.local`. Do produkce
 
 `src/lib/db/seed-data.json` je převod listů „HOTOVÉ POSTAVY“ (Barbar, Střelec, Šermíř) a „NPC 2“ (Nemrtví,
 Havěť, Střelci) z `podklady/Time to Delve.xlsx`. Rozpracované postavy a Vele-zvěř zatím převedené nejsou.
+
+## Import z Excelu
+
+Stránka `/generator/import`. Sešit se přečte v prohlížeči ([read-excel-file](https://gitlab.com/catamphetamine/read-excel-file)),
+[src/lib/import/excel.ts](src/lib/import/excel.ts) v něm najde tabulky karet a na server jdou jen jejich řádky.
+[src/lib/import/plan.ts](src/lib/import/plan.ts) je porovná s databází a ukáže náhled: nové karty, změny pole po poli,
+řádky s chybou a karty, které jsou v sešitu podruhé. Až po potvrzení se vše zapíše v jedné transakci – a jen pokud
+by import pořád udělal přesně to, co náhled ukázal. Když se karty mezitím změnily, neuloží se nic a ukáže se nový náhled.
+
+- Tabulky se hledají na všech listech podle řádku se záhlavím (názvy sloupců jako v listech „HOTOVÉ POSTAVY“ a „NPC 2“,
+  na pořadí, velikosti písmen a diakritice nezáleží). Tabulka končí prvním prázdným řádkem. Řádek s jedinou vyplněnou
+  buňkou (poznámka, nadpis další tabulky) není karta.
+- Classa je nadpis nad tabulkou (u NPC název skupiny vlevo od podskupin), jinak název listu. Chybějící classa se
+  vytvoří i s životy a pasivkou z řádku „BARBAR | BPAS | …“; barvu jí pak nastav ručně.
+- Karta se v rámci classy páruje podle kódu (u hrdinů ID Vrch), potom podle názvu. Přepíšou se jen pole, pro která má
+  tabulka sloupec. Karty, které v sešitu nejsou, zůstanou – import nic nemaže. Výjimka a Zbytek sdílí jedno pole karty:
+  vyplněná buňka ho přepíše, prázdná ho smaže jen tehdy, když karta drží právě ten druh.
+- Tabulky, které mají záhlaví karet, ale chybí jim povinný sloupec (Vele-zvěř, banditi), import přeskočí a řekne proč.
+  Listy, kde žádné záhlaví karet nenajde (třeba Rozdělané postavy – nemají sloupec s názvem karty), jen vypíše.
+
+Import aktuálního `podklady/Time to Delve.xlsx` do databáze naplněné `npm run db:seed` nic nezmění – hlídá to test
+v [tests/import.test.ts](tests/import.test.ts).
 
 ## Šablony karet
 

@@ -65,6 +65,9 @@ export function CardLibrary({ classes, cards, initialClass }: Props) {
           <Link href="/generator/karty/nova?typ=npc" className="btn">
             + NPC karta
           </Link>
+          <Link href="/generator/import" className="btn btn-ghost">
+            Import z Excelu
+          </Link>
         </div>
       </div>
 
