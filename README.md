@@ -7,6 +7,9 @@ Web hry Time to Delve: veřejná úvodní stránka a týmový generátor karet (
 - **Classy a NPC skupiny** mají vlastní barvu, která tónuje rámeček karty. Karta bez classy je obecná.
 - **Ikonografie:** klíčové slovo psané VELKÝMI písmeny (`ÚTOK 3`, `DOSAH 2`, `KRVÁCENÍ`…) se vykreslí ikonou
   z `podklady/TTD_Ikony`. Mapování a pravidla jsou v [src/lib/keywords.ts](src/lib/keywords.ts).
+- **Odhad síly:** editor u každé akce sečte ceny efektů z listu „Pravidla a informace“ a porovná je s rozpočtem
+  pro její čas (1 čas ≈ ÚTOK 1 … 7 časů ≈ ÚTOK 12, reakce ×1,5). Ceny jsou v [src/lib/keywords.ts](src/lib/keywords.ts),
+  výpočet v [src/lib/power.ts](src/lib/power.ts), vysvětlení pro tým na stránce Ikonografie.
 - Export karty do PNG v rozlišení šablony (864 × 1216 px).
 - Účty: registrace jen na e-mailovou pozvánku (stránka Tým), obnova hesla e-mailem přes Resend.
 
@@ -48,6 +51,7 @@ končit na `_test`.
 | `EMAIL_FROM` | Odesílatel, např. `Time to Delve <karty@tvoje-domena.cz>`. Doména musí být ověřená v Resendu. |
 | `APP_URL` | Adresa webu pro odkazy v e-mailech. Na Vercelu se doplní sama z produkční domény. |
 | `INVITE_CODE` | Nepovinný sdílený zvací kód pro registraci bez e-mailové pozvánky. |
+| `BACKUP_PASSPHRASE` | Nepovinné: heslo, kterým `npm run db:backup` šifruje zálohu a `npm run db:restore` ji rozšifruje (viz [Zálohy](#zálohy)). |
 | `CRON_SECRET` | Jen na Vercelu: tajemství, kterým se Vercel Cron prokazuje při denním úklidu prošlých přihlášení a pozvánek (`/api/cron/prune`, rozvrh ve `vercel.json`). |
 
 ## CI a nasazení
@@ -71,6 +75,43 @@ Ručně jde nasadit pořád přes `npx vercel deploy --prod`.
 Schéma je v [src/lib/db/schema.ts](src/lib/db/schema.ts). Po změně spusť `npm run db:generate`, commitni
 vzniklou migraci ve složce `drizzle/`. Na Vercelu se při každém buildu (`npm run vercel-build`) aplikují migrace
 a do prázdné databáze se nahrají data z podkladů. Chybějící karty z podkladů jde doplnit `npm run db:seed -- --doplnit`.
+
+## Zálohy
+
+Každou noc (02:30 UTC) GitHub Action [Záloha databáze](.github/workflows/backup.yml) zazálohuje produkční
+databázi a uloží ji jako artefakt běhu na 90 dní. Repozitář je veřejný a jeho artefakty si může stáhnout kdokoli
+s účtem na GitHubu, proto je záloha vždy zašifrovaná heslem `BACKUP_PASSPHRASE`. Obsahuje classy, karty a účty.
+Přihlášení, e-mailové odkazy a rate limity jsou krátkodobé, takže se z nich zálohuje jen struktura tabulek.
+Mimo plán jde zálohu spustit v Actions → Záloha databáze → Run workflow.
+
+Action potřebuje v repozitáři dva secrets:
+
+| Secret | Hodnota |
+| --- | --- |
+| `BACKUP_DATABASE_URL` | `DATABASE_URL_UNPOOLED` z nastavení projektu na Vercelu (přímé spojení do Neonu bez pooleru). |
+| `BACKUP_PASSPHRASE` | Dlouhé náhodné heslo, např. z `openssl rand -base64 32`. Ulož si ho i mimo GitHub (správce hesel): secret z GitHubu už přečíst nejde a bez hesla zálohu neobnovíš. |
+
+Ve veřejném repozitáři GitHub plánované běhy vypne po 60 dnech bez commitu. Pak je v Actions znovu zapni.
+
+Ruční záloha a obnova potřebují Docker (`pg_dump` a `pg_restore` běží z image `postgres`):
+
+```bash
+npm run db:backup                           # DATABASE_URL → zalohy/ttd-<čas>.dump, s BACKUP_PASSPHRASE zašifrovaná
+npm run db:restore -- zalohy/<soubor>       # obnova do DATABASE_URL, před přepsáním se zeptá
+```
+
+Obnova nahradí schémata `public` a `drizzle` obsahem zálohy v jedné transakci. Všechno zapsané od zálohy se ztratí
+a všichni se musí znovu přihlásit. Když je záloha starší než kód, skript na konci připomene `npm run db:migrate`.
+
+Zálohu z GitHubu obnovíš tak, že v běhu Action stáhneš artefakt, rozbalíš zip a spustíš:
+
+```bash
+read -rs BACKUP_PASSPHRASE && export BACKUP_PASSPHRASE   # heslo se nezapíše do historie shellu
+npm run db:restore -- ttd-2026-11-14T02-30Z.dump.enc
+```
+
+Bez dalšího nastavení míří obnova do databáze z `.env.local`. Do produkce obnovíš, když předtím v shellu nastavíš
+`DATABASE_URL` na `DATABASE_URL_UNPOOLED` z Vercelu (proměnná z prostředí má přednost před `.env.local`).
 
 ## Data z podkladů
 

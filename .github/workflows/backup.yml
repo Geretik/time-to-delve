@@ -1,0 +1,58 @@
+name: Záloha databáze
+
+# Every night a pg_dump of the production database (npm run db:backup), encrypted with BACKUP_PASSPHRASE
+# and kept for 90 days as an artifact of the run. The repository is public and so are its artifacts
+# to any GitHub user, so the backup must never be uploaded unencrypted. Restore: README, section Zálohy.
+
+on:
+  schedule:
+    - cron: "30 2 * * *" # 02:30 UTC
+  workflow_dispatch:
+
+concurrency:
+  group: db-backup
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  NODE_VERSION: 26 # same as the Vercel project
+
+jobs:
+  backup:
+    name: Záloha produkční databáze
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - run: npm ci
+
+      - name: Záloha
+        id: backup
+        env:
+          DATABASE_URL: ${{ secrets.BACKUP_DATABASE_URL }}
+          BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+        run: |
+          if [ -z "$DATABASE_URL" ] || [ -z "$BACKUP_PASSPHRASE" ]; then
+            echo "::error::Chybí secret BACKUP_DATABASE_URL nebo BACKUP_PASSPHRASE (README, sekce Zálohy)."
+            exit 1
+          fi
+          name="ttd-$(date -u +%Y-%m-%dT%H-%MZ)"
+          npm run db:backup -- --sifrovat --vystup "zalohy/$name.dump.enc"
+          echo "name=$name" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: ${{ steps.backup.outputs.name }}
+          path: zalohy/${{ steps.backup.outputs.name }}.dump.enc
+          if-no-files-found: error
+          retention-days: 90
+          # Encrypted data doesn't compress.
+          compression-level: 0

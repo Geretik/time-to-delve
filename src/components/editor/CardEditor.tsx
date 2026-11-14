@@ -18,6 +18,7 @@ import {
 import { downloadFace, fileSlug } from "@/lib/export";
 import { KeywordPalette } from "./KeywordPalette";
 import { KeywordTextarea, type ActiveField } from "./KeywordTextarea";
+import { ActionPower, NpcPower } from "./PowerMeter";
 
 export type ClassOption = {
   id: string;
@@ -377,6 +378,7 @@ export function CardEditor({ initial, classes, meta, legacyPanel = "" }: Props) 
                       onActivate={activate}
                       rows={2}
                     />
+                    <ActionPower text={half.text} upgraded={half.textUpgraded} time={half.time} reaction={half.reaction} />
                   </section>
                 );
               })}
@@ -474,6 +476,12 @@ export function CardEditor({ initial, classes, meta, legacyPanel = "" }: Props) 
                     onActivate={activate}
                   />
                 </div>
+                <NpcPower
+                  time={state.npc.time}
+                  main={state.npc.main}
+                  secondary={state.npc.secondary}
+                  secondaryLabel={SECONDARY_KIND[state.npc.secondaryKind].label}
+                />
               </section>
 
               <section className="panel space-y-3 p-4">
