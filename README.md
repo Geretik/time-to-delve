@@ -7,6 +7,9 @@ Web hry Time to Delve: veřejná úvodní stránka a týmový generátor karet (
 - **Classy a NPC skupiny** mají vlastní barvu, která tónuje rámeček karty. Karta bez classy je obecná.
 - **Ikonografie:** klíčové slovo psané VELKÝMI písmeny (`ÚTOK 3`, `DOSAH 2`, `KRVÁCENÍ`…) se vykreslí ikonou
   z `podklady/TTD_Ikony`. Mapování a pravidla jsou v [src/lib/keywords.ts](src/lib/keywords.ts).
+- **Odhad síly:** editor u každé akce sečte ceny efektů z listu „Pravidla a informace“ a porovná je s rozpočtem
+  pro její čas (1 čas ≈ ÚTOK 1 … 7 časů ≈ ÚTOK 12, reakce ×1,5). Ceny jsou v [src/lib/keywords.ts](src/lib/keywords.ts),
+  výpočet v [src/lib/power.ts](src/lib/power.ts), vysvětlení pro tým na stránce Ikonografie.
 - Export karty do PNG v rozlišení šablony (864 × 1216 px).
 - Účty: registrace jen na e-mailovou pozvánku (stránka Tým), obnova hesla e-mailem přes Resend.
 

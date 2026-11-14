@@ -1,5 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
 import { CATEGORY_LABEL, KEYWORDS, iconSrc, type KeywordCategory } from "@/lib/keywords";
+import { priceLabel } from "@/lib/power";
 
 const SHAPE: Record<KeywordCategory, string> = {
   mireni: "kolečko",
@@ -27,7 +28,7 @@ export function IconLegend({ detailed = true }: { detailed?: boolean }) {
                   {detailed && (
                     <p className="mt-1 text-xs text-faint">
                       {k.hideText ? "Na kartě jen ikona" : "Na kartě ikona i text"}
-                      {k.cost && ` · cena ${k.cost}`}
+                      {k.price && ` · cena ${priceLabel(k.price)}`}
                       {k.legacy?.length ? ` · dříve ${k.legacy.join(", ")}` : ""}
                     </p>
                   )}
